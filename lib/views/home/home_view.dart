@@ -29,119 +29,178 @@ class HomeView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. HEADER (Merah Melengkung & Card Status MASUK ke dalam)
-            // PERUBAHAN: Dibuat otomatis menyesuaikan tinggi konten, tidak pakai SizedBox fixed
+            // ==========================================
+            // 1. HEADER (GRADASI & WATERMARK)
+            // ==========================================
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 32), // Padding bawah 32 agar lengkungan terlihat
               decoration: const BoxDecoration(
-                color: primaryRed,
+                gradient: LinearGradient(
+                  colors: [Color.fromARGB(255, 83, 0, 0), Color(0xFF8B0000)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(40),
                 ),
               ),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // PERUBAHAN: Watermark ikon (Gedung Pemerintahan) di pojok kanan atas
-                  Positioned(
-                    right: -20,
-                    top: -20,
-                    child: Icon(
-                      Icons.account_balance,
-                      size: 140,
-                      color: Colors.white.withOpacity(0.05), // Dibuat sangat transparan
-                    ),
-                  ),
-
-                  // Konten Header
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Teks Sapaan & Ikon Notif
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Selamat Pagi,",
-                                style: TextStyle(color: Colors.white70, fontSize: 14),
-                              ),
-                              Text(
-                                "Budi Setiawan",
-                                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+              // Gunakan ClipRRect agar ikon rumah yang melayang tetap terpotong rapi mengikuti lengkungan merah
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(40),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: Transform.rotate(
+                        angle: 12 * 3.14159 / 180,
+                        child: Image(
+                          image: const AssetImage(
+                            'assets/icons/ic_home_after.png',
                           ),
-                          Row(
-                            children: [
-                              _buildTopIcon(Icons.notifications_none),
-                              const SizedBox(width: 12),
-                              _buildTopIcon(Icons.search),
-                            ],
-                          ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 24), // Jarak antara sapaan dan kartu
-                      
-                      // Card Status Identitas (Sekarang sepenuhnya di dalam area merah)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
+                          width:
+                              180, // Ukuran diperbesar sedikit agar lebih gagah
+                          height: 180,
+                          color: const Color.fromARGB(255, 58, 1, 1)
+                              .withOpacity(
+                                0.1,
+                              ), // Opacity halus agar tidak menabrak teks
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: goldColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+
+                    // --- Konten Utama ---
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Teks Sapaan & Ikon
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Selamat Pagi,",
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.7),
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                  child: const Icon(Icons.fingerprint, color: goldColor, size: 20),
-                                ),
-                                const SizedBox(width: 12),
-                                const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "STATUS IDENTITAS",
-                                      style: TextStyle(color: textGray, fontSize: 10, fontWeight: FontWeight.bold),
+                                  const Text(
+                                    "Budi Setiawan",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    Text(
-                                      "Terverifikasi (E-KTP)",
-                                      style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  _buildTopIcon(Icons.notifications_none),
+                                  const SizedBox(width: 8),
+                                  _buildTopIcon(Icons.search),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // --- Card Status Identitas ---
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(
+                                24,
+                              ), // Disamakan dengan radius umum
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
                                 ),
                               ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(color: primaryRed, borderRadius: BorderRadius.circular(8)),
-                              child: const Text("LIHAT QR", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            child: Row(
+                              children: [
+                                // Kotak Fingerprint (Revisi Border)
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFFFDF7E7,
+                                    ), // Warna emas pudar
+                                    // REVISI: BorderRadius disamakan biar tidak kaku
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: const Icon(
+                                    Icons.fingerprint,
+                                    color: Color(0xFFD4AF37),
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "STATUS IDENTITAS",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        "Terverifikasi (E-KTP)",
+                                        style: TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Tombol Lihat QR
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF8B0000),
+                                    borderRadius: BorderRadius.circular(
+                                      12,
+                                    ), // Radius disesuaikan
+                                  ),
+                                  child: const Text(
+                                    "LIHAT QR",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -149,7 +208,7 @@ class HomeView extends StatelessWidget {
 
             // 2. LAYANAN DIGITAL (Menu Grid)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Column(
                 children: [
                   Row(
@@ -157,11 +216,19 @@ class HomeView extends StatelessWidget {
                     children: [
                       const Text(
                         "Layanan Digital",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textDark),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: textDark,
+                        ),
                       ),
                       Text(
                         "Lihat Semua",
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryRed.withOpacity(0.8)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: primaryRed.withOpacity(0.8),
+                        ),
                       ),
                     ],
                   ),
@@ -191,11 +258,19 @@ class HomeView extends StatelessWidget {
                     children: [
                       const Text(
                         "Aktivitas Terakhir",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textDark),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: textDark,
+                        ),
                       ),
                       Text(
                         "Riwayat",
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryRed.withOpacity(0.8)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: primaryRed.withOpacity(0.8),
+                        ),
                       ),
                     ],
                   ),
@@ -206,22 +281,38 @@ class HomeView extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
                     child: Column(
                       children: [
                         _buildActivityItem(
-                          Icons.check_circle, greenSuccess, bgSuccess,
-                          "Verifikasi E-KTP", "2 Jam yang lalu", "BERHASIL", greenSuccess, bgSuccess,
+                          Icons.check_circle,
+                          greenSuccess,
+                          bgSuccess,
+                          "Verifikasi E-KTP",
+                          "2 Jam yang lalu",
+                          "BERHASIL",
+                          greenSuccess,
+                          bgSuccess,
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Divider(color: bgGray, thickness: 1.5),
                         ),
                         _buildActivityItem(
-                          Icons.description, Colors.blue, Colors.blue.withOpacity(0.1),
-                          "Permohonan Surat", "Kemarin, 14:20", "PROSES", yellowProcess, bgProcess,
+                          Icons.description,
+                          Colors.blue,
+                          Colors.blue.withOpacity(0.1),
+                          "Permohonan Surat",
+                          "Kemarin, 14:20",
+                          "PROSES",
+                          yellowProcess,
+                          bgProcess,
                         ),
                       ],
                     ),
@@ -243,9 +334,12 @@ class HomeView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   // PERUBAHAN: Background efek kota transparan
                   image: DecorationImage(
-                    image: const AssetImage('assets/images/city_bg.webp'), 
+                    image: const AssetImage('assets/images/city_bg.webp'),
                     fit: BoxFit.cover,
-                    colorFilter: ColorFilter.mode(primaryRed.withOpacity(0.3), BlendMode.dstATop),
+                    colorFilter: ColorFilter.mode(
+                      primaryRed.withOpacity(0.3),
+                      BlendMode.dstATop,
+                    ),
                   ),
                 ),
                 child: const Column(
@@ -253,12 +347,21 @@ class HomeView extends StatelessWidget {
                   children: [
                     Text(
                       "INFORMASI PUBLIK",
-                      style: TextStyle(color: goldColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+                      style: TextStyle(
+                        color: goldColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
                     ),
                     SizedBox(height: 8),
                     Text(
                       "Vaksinasi Massal\nKecamatan Merdeka",
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -303,12 +406,20 @@ class HomeView extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(icon, color: primaryRed, size: 28), // Ikon juga diperbesar
+          child: Icon(
+            icon,
+            color: primaryRed,
+            size: 28,
+          ), // Ikon juga diperbesar
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(color: textGray, fontSize: 11, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: textGray,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
@@ -316,7 +427,14 @@ class HomeView extends StatelessWidget {
 
   // Item List Aktivitas
   Widget _buildActivityItem(
-    IconData icon, Color iconColor, Color iconBg, String title, String time, String status, Color statusColor, Color statusBg,
+    IconData icon,
+    Color iconColor,
+    Color iconBg,
+    String title,
+    String time,
+    String status,
+    Color statusColor,
+    Color statusBg,
   ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -334,17 +452,34 @@ class HomeView extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: textDark,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Text(time, style: const TextStyle(color: textGray, fontSize: 10)),
+                Text(
+                  time,
+                  style: const TextStyle(color: textGray, fontSize: 10),
+                ),
               ],
             ),
           ],
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(20)),
-          child: Text(status, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold)),
+          decoration: BoxDecoration(
+            color: statusBg,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            status,
+            style: TextStyle(
+              color: statusColor,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ],
     );

@@ -9,7 +9,7 @@ void main() {
 
 class WartaApp extends StatelessWidget {
   const WartaApp({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,11 +18,15 @@ class WartaApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       theme: ThemeData(
-        // Set warna dasar aplikasi ke Merah Marun WARTA
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF8B0000)),
         useMaterial3: true,
-        // fontFamily: 'Inter', // Buka komen ini kalau font Inter sudah kamu tambahkan ke pubspec.yaml
-        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
+        // Gunakan copyWith untuk mengatur jenis teks spesifik
+        textTheme: GoogleFonts.interTextTheme().copyWith(
+          // Mengatur teks utama/judul menjadi tebal (w600)
+          bodyLarge: GoogleFonts.inter(fontWeight: FontWeight.w600),
+          // Mengatur teks biasa menjadi sedikit lebih tebal (w500)
+          bodyMedium: GoogleFonts.inter(fontWeight: FontWeight.w500),
+        ),
       ),
 
       // INI KUNCINYA: Jadikan LoginView sebagai halaman pertama yang terbuka

@@ -33,19 +33,29 @@ class AktivitasView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ==========================================
-            // 1. HEADER MERAH LENGKUNG & FILTER TABS
+            // 1. HEADER LENGKUNG (GRADASI & WATERMARK)
             // ==========================================
             SizedBox(
-              height: 200,
+              height: 230, // Tinggi area header
               child: Stack(
-                clipBehavior: Clip.none,
+                clipBehavior:
+                    Clip.none, // Penting agar tab bisa melayang keluar sedikit
                 children: [
+                  // 1. BACKGROUND MERAH (Paling Bawah)
                   Container(
                     height: 200,
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
+                    // PADDING DIHAPUS DARI SINI
                     decoration: BoxDecoration(
-                      color: primaryRed,
+                      // --- TERAPKAN GRADASI DI SINI ---
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 83, 0, 0),
+                          Color(0xFF8B0000),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: const BorderRadius.vertical(
                         bottom: Radius.circular(40),
                       ),
@@ -57,33 +67,70 @@ class AktivitasView extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Aktivitas Saya",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                    // 1. Tambahkan ClipRRect agar watermark mengikuti lengkungan
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(40),
+                      ),
+                      child: Stack(
+                        children: [
+                          // --- Watermark Icon ---
+                          Positioned(
+                            right: 5, // Sesuaikan geseran kanan-kirinya
+                            top: 30, // Sesuaikan geseran atas-bawahnya
+                            child: Transform.rotate(
+                              angle: 12 * 3.14159 / 180,
+                              child: Image(
+                                image: const AssetImage(
+                                  'assets/icons/ic_restore_after.png',
+                                ), // Pastikan nama asetnya benar
+                                width: 140,
+                                height: 140,
+                                color: const Color.fromARGB(
+                                  255,
+                                  58,
+                                  1,
+                                  1,
+                                ).withOpacity(0.1),
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Pantau status pengajuan dan laporan Anda",
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+
+                          // --- Konten Teks ---
+                          // 2. Padding dipindah ke sini, khusus untuk Teks
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Aktivitas Saya",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Pantau status pengajuan dan laporan Anda",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 
                   // Filter Tabs (Semua, Menunggu, Selesai) - Menimpa Header
                   Positioned(
-                    bottom: 24,
+                    bottom: 5, // Mengatur seberapa jauh dia melayang dari bawah
                     left: 24,
                     right: 24,
                     child: Row(
@@ -99,8 +146,7 @@ class AktivitasView extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 32),
-
+            const SizedBox(height: 24),
             // ==========================================
             // 2. KELOMPOK: HARI INI
             // ==========================================
@@ -217,32 +263,33 @@ class AktivitasView extends StatelessWidget {
 
   // Tombol Filter Tab di Header
   Widget _buildTabButton(String label, {required bool isActive}) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isActive ? primaryRedDark : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: isActive ? null : Border.all(color: borderColor),
-          boxShadow: isActive
-              ? null
-              : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isActive ? Colors.white : textDark,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+      decoration: BoxDecoration(
+        // Jika aktif, gunakan gradasi yang sama dengan header
+        gradient: isActive
+            ? const LinearGradient(
+                colors: [Color(0xFF8B0000), Color.fromARGB(255, 83, 0, 0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null, // Jika tidak aktif, tidak pakai gradasi
+        color: isActive ? null : Colors.white, // Jika tidak aktif, pakai putih
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isActive ? Colors.white : Colors.black87,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
         ),
       ),
     );

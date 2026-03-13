@@ -13,7 +13,7 @@ class SuratView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgApp,
+      backgroundColor: bgApp, // Pastikan variabel bgApp sudah ada
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 40),
         child: Column(
@@ -27,13 +27,20 @@ class SuratView extends StatelessWidget {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Latar Belakang Merah Lengkung
                   Container(
                     height: 200,
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(24, 50, 24, 0),
+                    // PADDING DIHAPUS DARI SINI, PINDAH KE DALAM
                     decoration: BoxDecoration(
-                      color: primaryRed,
+                      // 1. Terapkan warna gradasi di sini
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 83, 0, 0),
+                          Color(0xFF8B0000),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: const BorderRadius.vertical(
                         bottom: Radius.circular(40),
                       ),
@@ -45,37 +52,75 @@ class SuratView extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Baris Ikon Atas (Back & History)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildTopIcon(Icons.arrow_back),
-                            _buildTopIcon(Icons.history),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Teks Judul
-                        const Text(
-                          "Layanan Surat",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                    // 2. Bungkus Stack dengan ClipRRect
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(40),
+                      ),
+                      child: Stack(
+                        children: [
+                          // --- Watermark Icon ---
+                          Positioned(
+                            right: 20,
+                            top: 20,
+                            child: Transform.rotate(
+                              angle: 12 * 3.14159 / 180,
+                              child: Image(
+                                image: const AssetImage(
+                                  'assets/icons/ic_document_after.png',
+                                ),
+                                width: 140,
+                                height: 140,
+                                color: const Color.fromARGB(
+                                  255,
+                                  58,
+                                  1,
+                                  1,
+                                ).withOpacity(0.1),
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Ajukan permohonan surat secara online",
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+
+                          // --- Konten Teks & Tombol ---
+                          // 3. Padding dipindah ke sini
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 50, 24, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Baris Ikon Atas (Back & History)
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _buildTopIcon(Icons.arrow_back),
+                                    _buildTopIcon(Icons.history),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                // Teks Judul
+                                const Text(
+                                  "Layanan Surat",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Ajukan permohonan surat secara online",
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 
@@ -130,7 +175,7 @@ class SuratView extends StatelessWidget {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
-                            color: primaryRed,
+                            color: const Color.fromARGB(255, 117, 0, 0),
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(

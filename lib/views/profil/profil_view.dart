@@ -21,15 +21,55 @@ class ProfilView extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             // ==========================================
-            // 1. BACKGROUND MERAH MELENGKUNG
+            // 1. BACKGROUND MERAH MELENGKUNG (GRADASI & WATERMARK)
             // ==========================================
             Container(
               height: 280,
               width: double.infinity,
               decoration: const BoxDecoration(
-                color: primaryRed,
+                // Menerapkan Gradasi yang lebih terang dari kartu E-KTP
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromARGB(255, 83, 0, 0), 
+                    Color(0xFF8B0000), // Merah gelap (sama seperti primaryRed)
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(40),
+                ),
+              ),
+              // ClipRRect agar watermark tidak keluar dari lengkungan
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(40),
+                ),
+                child: Stack(
+                  children: [
+                    // --- Watermark Icon ---
+                    Positioned(
+                      right: 10,
+                      top: 20, // Disesuaikan agar posisinya pas di atas
+                      child: Transform.rotate(
+                        angle: 12 * 3.14159 / 180,
+                        child: Image(
+                          // TODO: Pastikan pakai ikon yang nyambung dengan Profil
+                          image: const AssetImage(
+                            'assets/icons/ic_user_after.png',
+                          ),
+                          width: 180,
+                          height: 180,
+                          color: const Color.fromARGB(
+                            255,
+                            58,
+                            1,
+                            1,
+                          ).withOpacity(0.1), // Transparansi halus
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

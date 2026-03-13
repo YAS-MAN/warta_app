@@ -16,27 +16,34 @@ class LoginView extends StatelessWidget {
     return Scaffold(
       backgroundColor: bgGray,
       body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            // 1. BACKGROUND MERAH DENGAN LENGKUNGAN (Gradient)
-            Container(
-              height:
-                  320, // Dibuat sedikit lebih tinggi agar tertutup kotak putih
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF8B0000), // Merah atas
-                    Color(0xFF660000), // Merah bawah
-                  ],
-                ),
-                // Membuat efek lengkungan elips di bawah
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.elliptical(400, 80),
+        child: 
+          Stack(
+            children: [
+              // Layer 1: Lengkungan Emas (Sedikit lebih tinggi dari yang merah)
+              Container(
+                height: 325, 
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: goldColor, // Warna emas
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.elliptical(400, 80),
+                  ),
                 ),
               ),
+              // Layer 2: Lengkungan Merah
+              Container(
+                height: 320, 
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF8B0000), Color(0xFF660000)],
+                  ),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.elliptical(400, 80),
+                  ),
+                ),
               child: const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

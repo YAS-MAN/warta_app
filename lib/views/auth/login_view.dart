@@ -57,8 +57,8 @@ class _LoginViewState extends State<LoginView> {
                   SizedBox(height: 20),
                   Image(
                     image: AssetImage('assets/images/warta_logo.png'),
-                    width: 80,
-                    height: 80,
+                    width: 120,
+                    height: 120,
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -145,7 +145,9 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: textGray,
                           ),
                           onPressed: () {
@@ -230,7 +232,9 @@ class _LoginViewState extends State<LoginView> {
                           // Pindah ke halaman utama (ganti MainNavigationPage dengan nama class Navbar kamu)
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => const RegisterView()),
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterView(),
+                            ),
                           );
                         },
                         child: const Text(

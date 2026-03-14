@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dotted_border/dotted_border.dart'; // Paket untuk border putus-putus
+import 'package:dotted_border/dotted_border.dart';
+import 'form_register_view.dart';
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});
@@ -8,7 +9,9 @@ class RegisterView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Definisi Warna dari CSS Figma
     const Color bgGray = Color(0xFFF9FAFB);
-    const Color primaryRed = Color(0xFF8B1E1E); // Sedikit lebih terang dari halaman login
+    const Color primaryRed = Color(
+      0xFF8B1E1E,
+    ); // Sedikit lebih terang dari halaman login
     const Color textDark = Color(0xFF0F172A);
     const Color textGray = Color(0xFF64748B);
     const Color goldColor = Color(0xFFD4AF37);
@@ -19,29 +22,103 @@ class RegisterView extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 1. HEADER MERAH MELENGKUNG (Sama dengan Login, tapi lebih pendek)
-            Container(
+            // 1. HEADER MERAH MELENGKUNG (Tema Baru Web/App WARTA)
+            SizedBox(
               height: 180,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: primaryRed,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.elliptical(400, 80),
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  const SizedBox(height: 40),
-                  // Ganti dengan Image.asset() kalau logo sudah siap
                   Container(
-                    width: 74,
-                    height: 74,
+                    height: 180,
+                    width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 83, 0, 0),
+                          Color(0xFF8B0000),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(40),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
-                    child: const Image(image: AssetImage('assets/images/warta_logo.png'), width: 80,height: 80,),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(40),
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            right: 20,
+                            top: 20,
+                            child: Transform.rotate(
+                              angle: 12 * 3.14159 / 180,
+                              child: Image(
+                                image: const AssetImage(
+                                  'assets/images/warta_logo.png',
+                                ),
+                                width: 140,
+                                height: 140,
+                                color: const Color.fromARGB(
+                                  255,
+                                  58,
+                                  1,
+                                  1,
+                                ).withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                InkWell(
+                                  onTap: () => Navigator.pop(context),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_back,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                const Expanded(
+                                  child: Text(
+                                    "Foto & Verifikasi e-KTP",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -62,7 +139,11 @@ class RegisterView extends StatelessWidget {
                       color: iconBgLight,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Icon(Icons.camera_alt_rounded, size: 40, color: primaryRed.withOpacity(0.6)),
+                    child: Icon(
+                      Icons.camera_alt_rounded,
+                      size: 40,
+                      color: primaryRed.withValues(alpha: 0.6),
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -82,10 +163,23 @@ class RegisterView extends StatelessWidget {
                   RichText(
                     textAlign: TextAlign.center,
                     text: const TextSpan(
-                      style: TextStyle(fontSize: 14, color: textGray, height: 1.5),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: textGray,
+                        height: 1.5,
+                      ),
                       children: [
-                        TextSpan(text: "Yuk mulai! Posisikan e-KTP kamu di dalam bingkai agar data bisa terbaca otomatis oleh sistem "),
-                        TextSpan(text: "WARTA", style: TextStyle(color: primaryRed, fontWeight: FontWeight.bold)),
+                        TextSpan(
+                          text:
+                              "Yuk mulai! Posisikan e-KTP kamu di dalam bingkai agar data bisa terbaca otomatis oleh sistem ",
+                        ),
+                        TextSpan(
+                          text: "WARTA",
+                          style: TextStyle(
+                            color: primaryRed,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         TextSpan(text: "."),
                       ],
                     ),
@@ -103,12 +197,18 @@ class RegisterView extends StatelessWidget {
                       width: double.infinity,
                       height: 190,
                       decoration: BoxDecoration(
-                        color: goldColor.withOpacity(0.05), // Background emas transparan
+                        color: goldColor.withValues(
+                          alpha: 0.05,
+                        ), // Background emas transparan
                       ),
                       child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.camera_alt_outlined, size: 30, color: goldColor),
+                          Icon(
+                            Icons.camera_alt_outlined,
+                            size: 30,
+                            color: goldColor,
+                          ),
                           SizedBox(height: 8),
                           Text(
                             "Area e-KTP",
@@ -139,13 +239,19 @@ class RegisterView extends StatelessWidget {
                     backgroundColor: primaryRed,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: Colors.yellow, width: 1), // Border kuning halus seperti di CSS
+                      side: const BorderSide(
+                        color: Colors.yellow,
+                        width: 1,
+                      ), // Border kuning halus seperti di CSS
                     ),
                     elevation: 5,
-                    shadowColor: primaryRed.withOpacity(0.5),
+                    shadowColor: primaryRed.withValues(alpha: 0.5),
                   ),
                   onPressed: () {
-                    // TODO: Panggil fungsi Kamera/ML Kit dari AuthViewModel
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const FormRegistView()),
+                    );
                   },
                   icon: const Icon(Icons.camera, color: Colors.white),
                   label: const Text(

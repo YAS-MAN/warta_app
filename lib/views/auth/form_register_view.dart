@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'photo_verif_view.dart';
 
-class FormRegistView extends StatelessWidget {
+class FormRegistView extends StatefulWidget {
   const FormRegistView({super.key});
 
+  @override
+  State<FormRegistView> createState() => _FormRegistViewState();
+}
+
+class _FormRegistViewState extends State<FormRegistView> {
   // Definisi Warna dari Desain Figma
   static const Color primaryRed = Color(0xFF800000);
   static const Color bgGray = Color(0xFFF8F9FA);
   static const Color textDark = Color(0xFF1E293B);
   static const Color labelGray = Color(0xFF6B7280);
   static const Color borderColor = Color(0xFFD1D5DB);
+
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -22,51 +31,113 @@ class FormRegistView extends StatelessWidget {
             Stack(
               alignment: Alignment.topCenter,
               children: [
-                // Background Merah Melengkung
-                Container(
-                  height: 140,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: primaryRed,
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.elliptical(400, 80),
-                    ),
-                  ),
-                ),
-                // AppBar Custom
-                Padding(
-                  padding: const EdgeInsets.only(top: 50, left: 24, right: 24),
-                  child: Row(
+                // Background Merah Melengkung (Sesuai Desain Baru)
+                SizedBox(
+                  height: 180,
+                  child: Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       Container(
+                        height: 180,
+                        width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color.fromARGB(255, 83, 0, 0),
+                              Color(0xFF8B0000),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(40),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
                         ),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-                          onPressed: () {
-                            // TODO: Navigasi kembali
-                          },
-                        ),
-                      ),
-                      const Expanded(
-                        child: Text(
-                          "Lengkapi Data Diri",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(40),
+                          ),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                right: 20,
+                                top: 20,
+                                child: Transform.rotate(
+                                  angle: 12 * 3.14159 / 180,
+                                  child: Image(
+                                    image: const AssetImage(
+                                      'assets/images/warta_logo.png',
+                                    ),
+                                    width: 140,
+                                    height: 140,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      58,
+                                      1,
+                                      1,
+                                    ).withValues(alpha: 0.1),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  24,
+                                  60,
+                                  24,
+                                  0,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    InkWell(
+                                      onTap: () => Navigator.pop(context),
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.arrow_back,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    const Expanded(
+                                      child: Text(
+                                        "Lengkapi Data Diri",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(width: 40), // Balancer agar teks di tengah
                     ],
                   ),
                 ),
-                
+
                 // 2. KOTAK PLACEHOLDER FOTO KTP (Tumpang tindih dengan background merah)
                 Padding(
                   padding: const EdgeInsets.only(top: 110, left: 24, right: 24),
@@ -77,7 +148,7 @@ class FormRegistView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -102,15 +173,22 @@ class FormRegistView extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: primaryRed.withOpacity(0.1),
+                                color: primaryRed.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.camera_alt, color: primaryRed, size: 30),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: primaryRed,
+                                size: 30,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             const Text(
                               "[FOTO_KTP_USER]",
-                              style: TextStyle(fontWeight: FontWeight.bold, color: textDark),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: textDark,
+                              ),
                             ),
                             const Text(
                               "KETUK UNTUK UNGGAH FOTO KTP",
@@ -141,21 +219,31 @@ class FormRegistView extends StatelessWidget {
                     padding: EdgeInsets.only(top: 4, left: 4),
                     child: Text(
                       "ⓘ Nama ini akan digunakan sebagai USERNAME Login",
-                      style: TextStyle(color: primaryRed, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: primaryRed,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(child: _buildTextField("TEMPAT LAHIR", "JAKARTA")),
+                      Expanded(
+                        child: _buildTextField("TEMPAT LAHIR", "JAKARTA"),
+                      ),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildTextField("TGL LAHIR", "17-08-1945")),
+                      Expanded(
+                        child: _buildTextField("TGL LAHIR", "17-08-1945"),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(child: _buildDropdown("JENIS KELAMIN", "LAKI-LAKI")),
+                      Expanded(
+                        child: _buildDropdown("JENIS KELAMIN", "LAKI-LAKI"),
+                      ),
                       const SizedBox(width: 16),
                       Expanded(child: _buildTextField("GOL. DARAH", "O")),
                     ],
@@ -167,17 +255,28 @@ class FormRegistView extends StatelessWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(child: _buildTextField("KEWARGANEGARAAN", "WNI")),
+                      Expanded(
+                        child: _buildTextField("KEWARGANEGARAAN", "WNI"),
+                      ),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildTextField("PEKERJAAN", "WIRAUSAHA")),
+                      Expanded(
+                        child: _buildTextField("PEKERJAAN", "WIRAUSAHA"),
+                      ),
                     ],
                   ),
 
                   const SizedBox(height: 32),
 
                   // --- SECTION: ALAMAT DOMISILI ---
-                  _buildSectionHeader(Icons.location_on_outlined, "ALAMAT DOMISILI"),
-                  _buildTextField("ALAMAT", "JL. MAWAR MERAH NO. 123, RT 001/002", maxLines: 3),
+                  _buildSectionHeader(
+                    Icons.location_on_outlined,
+                    "ALAMAT DOMISILI",
+                  ),
+                  _buildTextField(
+                    "ALAMAT",
+                    "JL. MAWAR MERAH NO. 123, RT 001/002",
+                    maxLines: 3,
+                  ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -189,9 +288,13 @@ class FormRegistView extends StatelessWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(child: _buildTextField("KELURAHAN", "KALIMALANG")),
+                      Expanded(
+                        child: _buildTextField("KELURAHAN", "KALIMALANG"),
+                      ),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildTextField("KECAMATAN", "BEKASI SELATAN")),
+                      Expanded(
+                        child: _buildTextField("KECAMATAN", "BEKASI SELATAN"),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -200,10 +303,35 @@ class FormRegistView extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // --- SECTION: DATA AKUN ---
-                  _buildSectionHeader(Icons.account_circle_outlined, "DATA AKUN"),
+                  _buildSectionHeader(
+                    Icons.account_circle_outlined,
+                    "DATA AKUN",
+                  ),
                   _buildTextField("EMAIL", "budi.setiawan@email.com"),
                   const SizedBox(height: 16),
-                  _buildTextField("BUAT PASSWORD", "password123", isPassword: true),
+                  _buildTextField(
+                    "BUAT PASSWORD",
+                    "password123",
+                    isPassword: true,
+                    isObscure: _obscurePassword,
+                    onToggleObscure: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    "KONFIRMASI PASSWORD",
+                    "password123",
+                    isPassword: true,
+                    isObscure: _obscureConfirmPassword,
+                    onToggleObscure: () {
+                      setState(() {
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                      });
+                    },
+                  ),
 
                   const SizedBox(height: 40),
 
@@ -214,16 +342,31 @@ class FormRegistView extends StatelessWidget {
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryRed,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 4,
                       ),
                       onPressed: () {
-                        // TODO: Proses simpan data ke Firebase
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PhotoVerifView(),
+                          ),
+                        );
                       },
-                      icon: const Icon(Icons.verified_user_outlined, color: Colors.white),
+                      icon: const Icon(
+                        Icons.verified_user_outlined,
+                        color: Colors.white,
+                      ),
                       label: const Text(
                         "SIMPAN & LANJUT",
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
                       ),
                     ),
                   ),
@@ -262,7 +405,11 @@ class FormRegistView extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(color: primaryRed, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                style: const TextStyle(
+                  color: primaryRed,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
               ),
             ],
           ),
@@ -274,17 +421,31 @@ class FormRegistView extends StatelessWidget {
   }
 
   // Pembuat Form Input Teks (TextFormField)
-  Widget _buildTextField(String label, String initialValue, {int maxLines = 1, bool isPassword = false}) {
+  Widget _buildTextField(
+    String label,
+    String initialValue, {
+    int maxLines = 1,
+    bool isPassword = false,
+    bool? isObscure,
+    VoidCallback? onToggleObscure,
+  }) {
     return TextFormField(
       initialValue: initialValue,
       maxLines: maxLines,
-      obscureText: isPassword,
+      obscureText: isObscure ?? false,
       style: const TextStyle(color: textDark, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: labelGray, fontSize: 12, fontWeight: FontWeight.bold),
+        labelStyle: const TextStyle(
+          color: labelGray,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: borderColor),
@@ -293,7 +454,17 @@ class FormRegistView extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: primaryRed, width: 2),
         ),
-        suffixIcon: isPassword ? const Icon(Icons.visibility_outlined, color: labelGray) : null,
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  (isObscure ?? true)
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: labelGray,
+                ),
+                onPressed: onToggleObscure,
+              )
+            : null,
       ),
     );
   }
@@ -306,9 +477,16 @@ class FormRegistView extends StatelessWidget {
       style: const TextStyle(color: textDark, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: labelGray, fontSize: 12, fontWeight: FontWeight.bold),
+        labelStyle: const TextStyle(
+          color: labelGray,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: borderColor),

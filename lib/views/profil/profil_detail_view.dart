@@ -14,14 +14,101 @@ class ProfilDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgApp,
-      appBar: AppBar(
-        title: Text(menuName),
-        backgroundColor: primaryRed,
-        foregroundColor: Colors.white,
-      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: _buildContentForMenu(menuName),
+        padding: const EdgeInsets.only(bottom: 40),
+        child: Column(
+          children: [
+            // ==========================================
+            // 1. HEADER MERAH MELENGKUNG (GRADASI & WATERMARK)
+            // ==========================================
+            SizedBox(
+              height: 180,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    height: 180,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color.fromARGB(255, 83, 0, 0), Color(0xFF8B0000)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            right: 20,
+                            top: 20,
+                            child: Transform.rotate(
+                              angle: 12 * 3.14159 / 180,
+                              child: Image(
+                                image: const AssetImage('assets/icons/ic_document_after.png'),
+                                width: 140,
+                                height: 140,
+                                color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                InkWell(
+                                  onTap: () => Navigator.pop(context),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    menuName,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // --- KONTEN DETAIL ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: _buildContentForMenu(menuName),
+            ),
+          ],
+        ),
       ),
     );
   }

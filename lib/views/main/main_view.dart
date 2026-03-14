@@ -19,10 +19,23 @@ class _MainViewState extends State<MainView> {
 
   // Daftar halaman yang akan ditampilkan sesuai urutan tab
   late final List<Widget> _pages;
+  late final PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: _viewModel.currentIndex);
+    
+    // Sinkronisasi perubahan ViewModel ke PageController dengan animasi
+    _viewModel.addListener(() {
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _viewModel.currentIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
     _pages = [
       HomeView(onNavigate: _viewModel.setIndex), // Index 0
       SuratView(onNavigate: _viewModel.setIndex), // Index 1
@@ -33,14 +46,24 @@ class _MainViewState extends State<MainView> {
   }
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // ListenableBuilder akan memantau perubahan dari MainViewModel
     return ListenableBuilder(
       listenable: _viewModel,
       builder: (context, _) {
         return Scaffold(
-          // Menampilkan halaman sesuai index yang aktif di ViewModel
-          body: _pages[_viewModel.currentIndex],
+          // Menggunakan PageView untuk transisi bergeser horizontal
+          body: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(), // Nonaktifkan swipe jari
+            children: _pages,
+          ),
 
           // Tombol Kamera (E-Report) melayang di tengah
           floatingActionButton: FloatingActionButton(

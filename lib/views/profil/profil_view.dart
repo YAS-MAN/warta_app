@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../auth/login_view.dart';
 import 'profil_detail_view.dart';
@@ -572,21 +573,60 @@ class _ProfilViewState extends State<ProfilView> {
                               onTap: () {
                                 showDialog(
                                   context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text("Konfirmasi Logout"),
-                                    content: const Text("Apakah Anda yakin ingin keluar?"),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(context), child: const Text("BATAL")),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(builder: (_) => const LoginView()),
-                                          );
-                                        },
-                                        child: const Text("KELUAR", style: TextStyle(color: primaryRed, fontWeight: FontWeight.bold)),
+                                  barrierColor: Colors.black.withValues(alpha: 0.1),
+                                  builder: (context) => BackdropFilter(
+                                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                                    child: Dialog(
+                                      backgroundColor: Colors.transparent,
+                                      elevation: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(24),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.6),
+                                          borderRadius: BorderRadius.circular(24),
+                                          border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 1.5),
+                                          boxShadow: [
+                                            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10)),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Text("Konfirmasi Logout", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                            const SizedBox(height: 12),
+                                            const Text("Apakah Anda yakin ingin keluar dari sesi aplikasi WARTA Anda saat ini?", textAlign: TextAlign.center, style: TextStyle(color: Colors.black54, fontSize: 13)),
+                                            const SizedBox(height: 32),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(context),
+                                                  style: TextButton.styleFrom(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                                  ),
+                                                  child: const Text("BATAL", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                                                ),
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: primaryRed,
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                    elevation: 0,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pushReplacement(
+                                                      context,
+                                                      MaterialPageRoute(builder: (_) => const LoginView()),
+                                                    );
+                                                  },
+                                                  child: const Text("KELUAR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ],
+                                    ),
                                   ),
                                 );
                               },

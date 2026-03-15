@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/berita_model.dart';
@@ -60,14 +59,18 @@ class BeritaApiService {
           return mapped;
         } else {
           // API returned error JSON (e.g. rate limit message)
-          debugPrint('[NewsData] API error body: ${response.body.substring(0, 200)}');
+          debugPrint(
+            '[NewsData] API error body: ${response.body.substring(0, 200)}',
+          );
         }
       } else if (response.statusCode == 401) {
         debugPrint('[NewsData] Unauthorized — API key invalid or expired');
       } else if (response.statusCode == 429) {
         debugPrint('[NewsData] Rate limit exceeded (429)');
       } else {
-        debugPrint('[NewsData] HTTP ${response.statusCode}: ${response.body.substring(0, 200)}');
+        debugPrint(
+          '[NewsData] HTTP ${response.statusCode}: ${response.body.substring(0, 200)}',
+        );
       }
     } on TimeoutException catch (_) {
       debugPrint('[NewsData] Request timed out');
@@ -107,7 +110,9 @@ class BeritaApiService {
           debugPrint('DETIK API FAILED (Status != 200): ${response.body}');
         }
       } else {
-        debugPrint('DETIK API FAILED (HTTP ${response.statusCode}): ${response.body}');
+        debugPrint(
+          'DETIK API FAILED (HTTP ${response.statusCode}): ${response.body}',
+        );
       }
     } catch (e) {
       debugPrint('DETIK API EXCEPTION: $e');
@@ -122,7 +127,9 @@ class BeritaApiService {
   // 2. Jika gagal, coba DetikNews Flask lokal
   // 3. Jika keduanya gagal, kembalikan list kosong
   // ============================================================
-  Future<List<BeritaModel>> getBeritaList({String query = 'pemerintah daerah'}) async {
+  Future<List<BeritaModel>> getBeritaList({
+    String query = 'pemerintah daerah',
+  }) async {
     // 1. Coba NewsData.io
     final newsData = await fetchFromNewsData(query: query);
     if (newsData.isNotEmpty) return newsData;

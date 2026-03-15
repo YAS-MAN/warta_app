@@ -27,6 +27,13 @@ class _RegisterViewState extends State<RegisterView> {
 
   File? _ktpImage;
   bool _isProcessing = false;
+  Map<String, String> _parsedData = {};
+  String? _ocrRawText;  // raw text from ML Kit, used to show quality hints
+  // Tombol aktif hanya kalau NIK dan Nama minimal berhasil terbaca
+  bool get _isKtpReady =>
+      _ktpImage != null &&
+      !_isProcessing &&
+      (_parsedData['nik']?.isNotEmpty == true || _parsedData['nama']?.isNotEmpty == true);
 
   Future<void> _ambilFotoKTP() async {
     // Pilih dari kamera atau galeri
@@ -98,53 +105,283 @@ class _RegisterViewState extends State<RegisterView> {
     setState(() {
       _ktpImage = image;
       _isProcessing = true;
+      _parsedData.clear();
     });
 
     // Jalankan OCR untuk ekstrak teks dari KTP
     final ocrText = await _ocrService.processImage(image);
     
     if (!mounted) return;
-    setState(() => _isProcessing = false);
+    
+    // Parse data dari teks OCR
+    final Map<String, String> data = _parseKTPData(ocrText ?? '');
 
-    // Parse data dari teks OCR (sederhana - cari NIK dan Nama)
-    final Map<String, String> parsedData = _parseKTPData(ocrText ?? '');
+    setState(() {
+      _isProcessing = false;
+      _parsedData = data;
+      _ocrRawText = ocrText;  // simpan raw text untuk display & debug
+    });
+  }
 
-    if (!mounted) return;
+  void _lanjutKeForm() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => FormRegistView(prefilledData: parsedData),
+        builder: (_) => FormRegistView(prefilledData: _parsedData),
+      ),
+    );
+  }
+
+  /// Menampilkan hasil scan KTP field-by-field dengan tips perbaikan
+  Widget _buildOcrResultPanel() {
+    // Daftar field penting beserta label UX yang ramah
+    final List<Map<String, String>> fields = [
+      {'key': 'nik',              'label': 'NIK (16 digit)'},
+      {'key': 'nama',             'label': 'Nama'},
+      {'key': 'ttl',              'label': 'Tempat / Tgl Lahir'},
+      {'key': 'jenis_kelamin',    'label': 'Jenis Kelamin'},
+      {'key': 'gol_darah',        'label': 'Golongan Darah'},
+      {'key': 'alamat',           'label': 'Alamat'},
+      {'key': 'rt',               'label': 'RT/RW'},
+      {'key': 'kelurahan',        'label': 'Kel/Desa'},
+      {'key': 'kecamatan',        'label': 'Kecamatan'},
+      {'key': 'agama',            'label': 'Agama'},
+      {'key': 'status_perkawinan','label': 'Status Perkawinan'},
+      {'key': 'pekerjaan',        'label': 'Pekerjaan'},
+      {'key': 'kewarganegaraan',  'label': 'Kewarganegaraan'},
+    ];
+
+    final int total = fields.length;
+    final int found = fields.where((f) => _parsedData[f['key']]?.isNotEmpty == true).length;
+    final bool ocrFailed = _ocrRawText == null || _ocrRawText!.trim().isEmpty;
+    final bool hasCore = _parsedData['nik']?.isNotEmpty == true || _parsedData['nama']?.isNotEmpty == true;
+
+    // Tips kontekstual berdasarkan kondisi
+    List<String> tips = [];
+    if (ocrFailed) {
+      tips.add('📷 OCR tidak berhasil membaca gambar sama sekali.');
+      tips.add('Pastikan foto tidak buram atau terlalu gelap.');
+      tips.add('Coba ambil foto lebih dekat dan pastikan pencahayaan cukup.');
+    } else if (!hasCore) {
+      tips.add('⚠️ NIK dan Nama tidak terbaca. Ini field wajib.');
+      if (_ocrRawText!.length < 50) {
+        tips.add('Gambar kemungkinan terpotong — pastikan seluruh KTP terlihat dalam bingkai.');
+      } else {
+        tips.add('Gambar mungkin buram — coba ambil ulang dengan kamera yang lebih stabil.');
+      }
+    } else if (found < total ~/ 2) {
+      tips.add('Sebagian field tidak terbaca. Coba perbaiki pencahayaan atau kurangi glare/silau.');
+    }
+
+    Color statusColor = hasCore ? Colors.green.shade700 : Colors.red.shade600;
+    Color statusBg   = hasCore ? Colors.green.shade50 : Colors.red.shade50;
+    IconData statusIcon = hasCore ? Icons.check_circle_rounded : Icons.error_rounded;
+    String statusTitle = hasCore
+        ? 'Scan Berhasil — $found/$total field terbaca'
+        : 'Scan Gagal — Field utama tidak terdeteksi';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: statusBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header status
+          Row(
+            children: [
+              Icon(statusIcon, color: statusColor, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  statusTitle,
+                  style: TextStyle(fontWeight: FontWeight.bold, color: statusColor, fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Grid field checklist
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: fields.map((f) {
+              final bool ok = _parsedData[f['key']]?.isNotEmpty == true;
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: ok ? Colors.green.shade100 : Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      ok ? Icons.check : Icons.close,
+                      size: 12,
+                      color: ok ? Colors.green.shade800 : Colors.red.shade800,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      f['label']!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: ok ? Colors.green.shade900 : Colors.red.shade900,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+
+          // Tips jika ada
+          if (tips.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            const SizedBox(height: 10),
+            Text(
+              'Saran Perbaikan:',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange.shade800),
+            ),
+            const SizedBox(height: 6),
+            ...tips.map((tip) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                '• $tip',
+                style: TextStyle(fontSize: 12, color: Colors.orange.shade900, height: 1.4),
+              ),
+            )),
+          ],
+
+          // Nilai mentah OCR untuk debugging (bisa dikomentari saat production)
+          if (!hasCore && _ocrRawText != null && _ocrRawText!.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              iconColor: Colors.grey,
+              title: Text('Lihat teks OCR mentah', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(6)),
+                  child: Text(
+                    _ocrRawText!.trim().length > 400 ? '${_ocrRawText!.trim().substring(0, 400)}...' : _ocrRawText!.trim(),
+                    style: const TextStyle(fontSize: 10, fontFamily: 'monospace', color: Colors.black87),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
 
   /// Parse basic KTP fields from raw OCR text
   Map<String, String> _parseKTPData(String rawText) {
-    final lines = rawText.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
-    final data = <String, String>{};
-
-    for (int i = 0; i < lines.length; i++) {
-      final line = lines[i].toUpperCase();
-
-      // NIK: biasanya 16 digit angka
-      final nikMatch = RegExp(r'\b\d{16}\b').firstMatch(lines[i]);
-      if (nikMatch != null) data['nik'] = nikMatch.group(0)!;
-
-      // Nama: baris setelah "NAMA"
-      if (line.contains('NAMA') && i + 1 < lines.length) {
-        final nama = lines[i + 1].replaceAll(RegExp(r'[^a-zA-Z\s]'), '').trim();
-        if (nama.length > 3) data['nama'] = nama;
+    Map<String, String> data = {};
+    
+    // Helper function for inline elements that might be skipped
+    String getCapsValueAfter(String keywordPtn) {
+      final ptn = RegExp(r'' + keywordPtn + r'[\s\:\=\-]*([A-Z0-9\s\.\/\-\,]+?)\n', caseSensitive: false);
+      final match = ptn.firstMatch(rawText);
+      if (match != null) {
+        String val = match.group(1)!.trim();
+        if (val.isEmpty || RegExp(r'^[^a-zA-Z0-9]+$').hasMatch(val)) {
+             return '';
+        }
+        return val;
       }
+      return '';
+    }
 
-      // Tempat/Tgl Lahir
-      if ((line.contains('TEMPAT') || line.contains('LAHIR')) && i + 1 < lines.length) {
-        data['ttl'] = lines[i + 1].trim();
-      }
+    // Provinsi
+    final provMatch = RegExp(r'(?:PROVINSI)\s*([A-Z\s]+)', caseSensitive: false).firstMatch(rawText);
+    if (provMatch != null) data['provinsi'] = provMatch.group(1)!.split('\n')[0].trim();
 
-      // Alamat
-      if (line.contains('ALAMAT') && i + 1 < lines.length) {
-        data['alamat'] = lines[i + 1].trim();
-      }
+    // Kabupaten/Kota
+    final kabMatch = RegExp(r'(?:PROVINSI)[^\n]*\n([A-Z\s]+)', caseSensitive: false).firstMatch(rawText);
+    if (kabMatch != null) data['kabupaten'] = kabMatch.group(1)!.split('\n')[0].trim();
+
+    // NIK (16 digits)
+    final nikMatch = RegExp(r'\b\d{16}\b').firstMatch(rawText);
+    if (nikMatch != null) data['nik'] = nikMatch.group(0)!;
+
+    // Nama
+    final namaMatch = RegExp(r'(?:Nama|Narna|Name|Nma)[\s\:\=\-]*([A-Z\s\.,]+)', caseSensitive: false).firstMatch(rawText);
+    if (namaMatch != null) data['nama'] = namaMatch.group(1)!.split('\n')[0].trim();
+
+    // Tempat/Tgl Lahir
+    final ttlMatch = RegExp(r'(?:Tempat|Tgl|Lahir|Tempat/Tgl Lahir|Tempat/Tq1 Lahir)[\s\:\=\-]*([A-Za-z0-9\s]+,?\s*\d{2}-\d{2}-\d{4})', caseSensitive: false).firstMatch(rawText);
+    if (ttlMatch != null) data['ttl'] = ttlMatch.group(1)!.split('\n')[0].trim();
+
+    // Jenis Kelamin
+    final jkMatch = RegExp(r'((?:LAKI-LAKI|PEREMPUAN|LAKI - LAKI|LAKI))', caseSensitive: false).firstMatch(rawText);
+    if (jkMatch != null) {
+      String jk = jkMatch.group(1)?.replaceAll(' ', '').toUpperCase() ?? '';
+      if(jk == 'LAKI') jk = 'LAKI-LAKI';
+      data['jenis_kelamin'] = jk;
+    }
+
+    // Gol Darah
+    final golMatch = RegExp(r'(?:Gol\.?\s*Darah|Darah)[\s\:\=\-]*([A|B|AB|O|0|\-]+)', caseSensitive: false).firstMatch(rawText);
+    if (golMatch != null) {
+      String gol = golMatch.group(1)!.replaceAll('-', '').trim();
+      if (gol == '0') gol = 'O'; 
+      if (gol == '') gol = '-';
+      data['gol_darah'] = gol;
+    }
+
+    // Alamat
+    final alamatMatch = RegExp(r'(?:Alamat)[\s\:\=\-]*([A-Za-z0-9\s\.\/\-]+)', caseSensitive: false).firstMatch(rawText);
+    if (alamatMatch != null) {
+      data['alamat'] = alamatMatch.group(1)!.split('\n')[0].trim();
+    }
+
+    // RT/RW
+    final rtrwMatch = RegExp(r'(?:RT|RW|RT/RW|RTI/RW)[\s\:\=\-]*(\d{3})[\s\/\[\]\|\-]*(\d{3})', caseSensitive: false).firstMatch(rawText);
+    if (rtrwMatch != null) {
+      data['rt'] = rtrwMatch.group(1)!;
+      data['rw'] = rtrwMatch.group(2)!;
+    }
+
+    // Kel/Desa
+    final kelMatch = RegExp(r'(?:Kel/Desa|Kel|Desa|ke1/Desa)[\s\:\=\-]*([A-Z\s]+)', caseSensitive: false).firstMatch(rawText);
+    if (kelMatch != null) {
+       String kel = kelMatch.group(1)!.split('\n')[0].trim();
+       if (kel == 'amin') kel = getCapsValueAfter(r'(?:Kel/Desa|Kel|Desa|ke1/Desa)');
+       data['kelurahan'] = kel;
+    }
+
+    // Kecamatan
+    final kecMatch = RegExp(r'(?:Kecamatan|Kec|kecamatan)[\s\:\=\-]*([A-Z\s]+)', caseSensitive: false).firstMatch(rawText);
+    if (kecMatch != null) data['kecamatan'] = kecMatch.group(1)!.split('\n')[0].trim();
+
+    // Agama
+    final agamaMatch = RegExp(r'(?:Agama)[\s\:\=\-]*([A-Z\s]+)', caseSensitive: false).firstMatch(rawText);
+    if (agamaMatch != null) data['agama'] = agamaMatch.group(1)!.split('\n')[0].trim();
+
+    // Status Perkawinan
+    final statusMatch = RegExp(r'(?:Status\s*Perkawinan|Status)[\s\:\=\-]*([A-Z\s]+)', caseSensitive: false).firstMatch(rawText);
+    if (statusMatch != null) data['status_perkawinan'] = statusMatch.group(1)!.split('\n')[0].trim();
+
+    // Pekerjaan
+    final pekerjaanMatch = RegExp(r'(?:Pekerjaan)[\s\:\=\-]*([A-Z\s\/]+)', caseSensitive: false).firstMatch(rawText);
+    if (pekerjaanMatch != null) data['pekerjaan'] = pekerjaanMatch.group(1)!.split('\n')[0].trim();
+
+    // Kewarganegaraan
+    final kwMatch = RegExp(r'(?:Kewarganegaraan)[\s\:\=\-]*([A-Z0-9\s]+)', caseSensitive: false).firstMatch(rawText);
+    if (kwMatch != null) {
+       String kw = kwMatch.group(1)!.split('\n')[0].replaceAll(' ', '').trim();
+       if (kw == 'WN1') kw = 'WNI';
+       data['kewarganegaraan'] = kw;
     }
 
     return data;
@@ -274,59 +511,75 @@ class _RegisterViewState extends State<RegisterView> {
                   const SizedBox(height: 32),
 
                   // 3. Area Preview KTP
-                  DottedBorder(
-                    color: goldColor,
-                    strokeWidth: 2,
-                    dashPattern: const [8, 4],
-                    borderType: BorderType.RRect,
-                    radius: const Radius.circular(12),
-                    child: Container(
-                      width: double.infinity,
-                      height: 190,
-                      decoration: BoxDecoration(
-                        color: goldColor.withValues(alpha: 0.05),
-                      ),
-                      child: _ktpImage != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  kIsWeb ? Image.network(_ktpImage!.path, fit: BoxFit.cover) : Image.file(_ktpImage!, fit: BoxFit.cover),
-                                  if (_isProcessing)
-                                    Container(
-                                      color: Colors.black.withValues(alpha: 0.5),
-                                      child: const Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          CircularProgressIndicator(color: Colors.white),
-                                          SizedBox(height: 12),
-                                          Text("Membaca data KTP...", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                                        ],
+                  GestureDetector(
+                    onTap: _isProcessing ? null : _ambilFotoKTP,
+                    child: DottedBorder(
+                      color: goldColor,
+                      strokeWidth: 2,
+                      dashPattern: const [8, 4],
+                      borderType: BorderType.RRect,
+                      radius: const Radius.circular(12),
+                      child: Container(
+                        width: double.infinity,
+                        height: 190,
+                        decoration: BoxDecoration(
+                          color: goldColor.withValues(alpha: 0.05),
+                        ),
+                        child: _ktpImage != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    kIsWeb ? Image.network(_ktpImage!.path, fit: BoxFit.cover) : Image.file(_ktpImage!, fit: BoxFit.cover),
+                                    if (_isProcessing)
+                                      Container(
+                                        color: Colors.black.withValues(alpha: 0.5),
+                                        child: const Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            CircularProgressIndicator(color: Colors.white),
+                                            SizedBox(height: 12),
+                                            Text("Membaca data KTP...", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                                          ],
+                                        ),
                                       ),
-                                    ),
+                                    if (!_isProcessing)
+                                      Container(
+                                        color: Colors.black.withValues(alpha: 0.2),
+                                        alignment: Alignment.center,
+                                        child: const Icon(Icons.refresh, color: Colors.white, size: 40),
+                                      ),
+                                  ],
+                                ),
+                              )
+                            : const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.camera_alt_outlined, size: 30, color: goldColor),
+                                  SizedBox(height: 8),
+                                  Text("Area e-KTP", style: TextStyle(color: goldColor, fontSize: 14, fontWeight: FontWeight.w500)),
+                                  SizedBox(height: 4),
+                                  Text("Ketuk area ini untuk mengambil foto", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
                                 ],
                               ),
-                            )
-                          : const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.camera_alt_outlined, size: 30, color: goldColor),
-                                SizedBox(height: 8),
-                                Text("Area e-KTP", style: TextStyle(color: goldColor, fontSize: 14, fontWeight: FontWeight.w500)),
-                                SizedBox(height: 4),
-                                Text("Ketuk tombol di bawah untuk memulai", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
-                              ],
-                            ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 40),
+            // 3b. PANEL HASIL OCR (muncul setelah foto diambil)
+            if (_ktpImage != null && !_isProcessing)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                child: _buildOcrResultPanel(),
+              ),
 
-            // 4. TOMBOL AMBIL FOTO
+            const SizedBox(height: 24),
+
+            // 4. TOMBOL SELANJUTNYA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
@@ -334,19 +587,19 @@ class _RegisterViewState extends State<RegisterView> {
                 height: 56,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryRed,
+                    backgroundColor: _isKtpReady ? Colors.green : Colors.grey.shade400,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: Colors.yellow, width: 1),
+                      side: BorderSide(color: _isKtpReady ? Colors.green.shade700 : Colors.transparent, width: 1),
                     ),
-                    elevation: 5,
-                    shadowColor: primaryRed.withValues(alpha: 0.5),
+                    elevation: _isKtpReady ? 5 : 0,
+                    shadowColor: _isKtpReady ? Colors.green.withValues(alpha: 0.5) : Colors.transparent,
                   ),
-                  onPressed: _isProcessing ? null : _ambilFotoKTP,
-                  icon: const Icon(Icons.camera, color: Colors.white),
-                  label: Text(
-                    _isProcessing ? "MEMPROSES..." : "AMBIL FOTO KTP",
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16, letterSpacing: 0.8),
+                  onPressed: _isKtpReady ? _lanjutKeForm : null,
+                  icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
+                  label: const Text(
+                    "SELANJUTNYA",
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16, letterSpacing: 0.8),
                   ),
                 ),
               ),

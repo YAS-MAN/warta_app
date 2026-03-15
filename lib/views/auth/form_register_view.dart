@@ -283,7 +283,7 @@ class _FormRegistViewState extends State<FormRegistView> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildTextField("TEMPAT / TGL LAHIR", "", controller: _ttlCtrl),
+                        child: _buildTextField("TEMPAT / TGL LAHIR", widget.prefilledData['ttl'] ?? "", controller: _ttlCtrl),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -295,25 +295,25 @@ class _FormRegistViewState extends State<FormRegistView> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildDropdown("JENIS KELAMIN", "-"),
+                        child: _buildDropdown("JENIS KELAMIN", widget.prefilledData['jenis_kelamin']?.isNotEmpty == true ? widget.prefilledData['jenis_kelamin']! : "-"),
                       ),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildTextField("GOL. DARAH", "")),
+                      Expanded(child: _buildTextField("GOL. DARAH", widget.prefilledData['gol_darah'] ?? "")),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildTextField("AGAMA", ""),
+                  _buildTextField("AGAMA", widget.prefilledData['agama'] ?? ""),
                   const SizedBox(height: 16),
-                  _buildDropdown("STATUS PERKAWINAN", "-"),
+                  _buildDropdown("STATUS PERKAWINAN", widget.prefilledData['status_perkawinan']?.isNotEmpty == true ? widget.prefilledData['status_perkawinan']! : "-"),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
-                        child: _buildTextField("KEWARGANEGARAAN", ""),
+                        child: _buildTextField("KEWARGANEGARAAN", widget.prefilledData['kewarganegaraan'] ?? ""),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: _buildTextField("PEKERJAAN", ""),
+                        child: _buildTextField("PEKERJAAN", widget.prefilledData['pekerjaan'] ?? ""),
                       ),
                     ],
                   ),
@@ -334,25 +334,25 @@ class _FormRegistViewState extends State<FormRegistView> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(child: _buildTextField("RT", "")),
+                      Expanded(child: _buildTextField("RT", widget.prefilledData['rt'] ?? "")),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildTextField("RW", "")),
+                      Expanded(child: _buildTextField("RW", widget.prefilledData['rw'] ?? "")),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
-                        child: _buildTextField("KELURAHAN", ""),
+                        child: _buildTextField("KELURAHAN", widget.prefilledData['kelurahan'] ?? ""),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: _buildTextField("KECAMATAN", ""),
+                        child: _buildTextField("KECAMATAN", widget.prefilledData['kecamatan'] ?? ""),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildTextField("KABUPATEN/KOTA", ""),
+                  _buildTextField("KABUPATEN/KOTA", widget.prefilledData['kabupaten'] ?? ""),
 
                   const SizedBox(height: 32),
 

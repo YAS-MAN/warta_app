@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'login_view.dart';
+import '../../utils/top_notification.dart';
 
-class OtpVerifyView extends StatelessWidget {
+class OtpVerifyView extends StatefulWidget {
   const OtpVerifyView({super.key});
 
+  @override
+  State<OtpVerifyView> createState() => _OtpVerifyViewState();
+}
+
+class _OtpVerifyViewState extends State<OtpVerifyView> {
   @override
   Widget build(BuildContext context) {
     // Definisi Warna dari CSS Figma
@@ -18,29 +25,87 @@ class OtpVerifyView extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. HEADER (Tombol Back)
-            Padding(
-              padding: const EdgeInsets.only(left: 16, top: 16, right: 16),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: InkWell(
-                  onTap: () {
-                    // TODO: Aksi kembali
-                  },
-                  borderRadius: BorderRadius.circular(50),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
+            // 1. HEADER MERAH MELENGKUNG (Tema Baru Web/App WARTA)
+            SizedBox(
+              height: 180,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    height: 180,
+                    width: double.infinity,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey.withOpacity(0.1),
+                      gradient: const LinearGradient(
+                        colors: [Color.fromARGB(255, 83, 0, 0), Color(0xFF8B0000)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.arrow_back, color: textDark, size: 20),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            right: 20,
+                            top: 20,
+                            child: Transform.rotate(
+                              angle: 12 * 3.14159 / 180,
+                              child: Image(
+                                image: const AssetImage('assets/images/warta_logo.png'),
+                                width: 140,
+                                height: 140,
+                                color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                InkWell(
+                                  onTap: () => Navigator.pop(context),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                const Expanded(
+                                  child: Text(
+                                    "Verifikasi OTP",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
-
-            // 2. KONTEN TENGAH (Ikon & Teks)
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -98,15 +163,23 @@ class OtpVerifyView extends StatelessWidget {
                               border: Border.all(color: goldColor, width: 2),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const TextField(
+                            child: TextField(
                               textAlign: TextAlign.center,
                               keyboardType: TextInputType.number,
+                              textInputAction: index < 5 ? TextInputAction.next : TextInputAction.done,
                               maxLength: 1,
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              decoration: InputDecoration(
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 counterText: "", // Menghilangkan teks "0/1" di bawah
                               ),
+                              onChanged: (value) {
+                                if (value.isNotEmpty && index < 5) {
+                                  FocusScope.of(context).nextFocus();
+                                } else if (value.isEmpty && index > 0) {
+                                  FocusScope.of(context).previousFocus();
+                                }
+                              },
                             ),
                           );
                         }),
@@ -118,7 +191,11 @@ class OtpVerifyView extends StatelessWidget {
                     // 4. TEKS KIRIM ULANG KODE
                     GestureDetector(
                       onTap: () {
-                        // TODO: Logika kirim ulang OTP
+                        TopNotification.show(
+                          context: context,
+                          message: "Kode OTP telah dikirim ulang ke email Anda.",
+                          isSuccess: true,
+                        );
                       },
                       child: const Text(
                         "Kirim ulang kode",
@@ -148,10 +225,18 @@ class OtpVerifyView extends StatelessWidget {
                       side: const BorderSide(color: Colors.yellow, width: 1), // Border kuning sesuai CSS
                     ),
                     elevation: 5,
-                    shadowColor: primaryRed.withOpacity(0.4),
+                    shadowColor: primaryRed.withValues(alpha: 0.4),
                   ),
                   onPressed: () {
-                    // TODO: Logika Verifikasi OTP
+                    TopNotification.show(
+                      context: context,
+                      message: "Registrasi Berhasil! Silakan Login.",
+                      isSuccess: true,
+                    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginView()),
+                    );
                   },
                   child: const Text(
                     "VERIFIKASI",

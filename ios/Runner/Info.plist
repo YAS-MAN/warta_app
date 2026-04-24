@@ -4,6 +4,16 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	
+	<!-- ITERATION 17 PERMISSIONS -->
+	<key>NSCameraUsageDescription</key>
+	<string>Membutuhkan akses kamera untuk memindai KTP dan melampirkan foto laporan.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Membutuhkan akses galeri untuk mengunggah berkas atau bukti laporan.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Membutuhkan lokasi Anda untuk menandai titik kejadian pada pelaporan warga.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Membutuhkan lokasi Anda untuk fitur pemetaan dan pelaporan terpadu.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

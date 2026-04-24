@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "856593740943",
+    "project_id": "warta-46528",
+    "storage_bucket": "warta-46528.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:856593740943:android:3116ab9eb5cb467ae32cfa",
+        "android_client_info": {
+          "package_name": "com.example.warta_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXrhb4pqmrsPf7LUkaPPVHXwnxMSpEKgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -18,13 +18,38 @@ class _MainViewState extends State<MainView> {
   final MainViewModel _viewModel = MainViewModel();
 
   // Daftar halaman yang akan ditampilkan sesuai urutan tab
-  final List<Widget> _pages = [
-    const HomeView(), // Index 0
-    const SuratView(), // Index 1
-    const SizedBox(), // Index 2 (Dikosongkan karena ini area tombol Kamera)
-    const AktivitasView(), // Index 3
-    const ProfilView(), // Index 4
-  ];
+  late final List<Widget> _pages;
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _viewModel.currentIndex);
+    
+    // Sinkronisasi perubahan ViewModel ke PageController dengan animasi
+    _viewModel.addListener(() {
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _viewModel.currentIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+    _pages = [
+      HomeView(onNavigate: _viewModel.setIndex), // Index 0
+      SuratView(onNavigate: _viewModel.setIndex), // Index 1
+      const SizedBox(), // Index 2 (Dikosongkan karena ini area tombol Kamera)
+      const AktivitasView(), // Index 3
+      const ProfilView(), // Index 4
+    ];
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +58,12 @@ class _MainViewState extends State<MainView> {
       listenable: _viewModel,
       builder: (context, _) {
         return Scaffold(
-          // Menampilkan halaman sesuai index yang aktif di ViewModel
-          body: _pages[_viewModel.currentIndex],
+          // Menggunakan PageView untuk transisi bergeser horizontal
+          body: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(), // Nonaktifkan swipe jari
+            children: _pages,
+          ),
 
           // Tombol Kamera (E-Report) melayang di tengah
           floatingActionButton: FloatingActionButton(

@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
+import '../../utils/top_notification.dart';
+import 'surat_detail_view.dart';
+import 'surat_category_view.dart';
 
-class SuratView extends StatelessWidget {
-  const SuratView({super.key});
+import '../../models/surat_model.dart';
+import '../../services/surat_service.dart';
 
-  // Warna sesuai CSS Figma
-  static const Color primaryRed = Color(0xFF8B0000);
+class SuratView extends StatefulWidget {
+  final Function(int) onNavigate;
+
+  const SuratView({super.key, required this.onNavigate});
+
+  @override
+  State<SuratView> createState() => _SuratViewState();
+}
+
+class _SuratViewState extends State<SuratView> {
+  // State Filter
+  bool _isFilterOpen = false;
+  String _selectedFilter = "Semua Kategori";
+
   static const Color bgApp = Color(0xFFF8FAFC);
   static const Color textDark = Color(0xFF111827);
   static const Color textGray = Color(0xFF6B7280);
-  static const Color goldColor = Color(0xFFD4AF37);
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +60,7 @@ class SuratView extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 15,
                           offset: const Offset(0, 10),
                         ),
@@ -76,7 +90,7 @@ class SuratView extends StatelessWidget {
                                   58,
                                   1,
                                   1,
-                                ).withOpacity(0.1),
+                                ).withValues(alpha: 0.1),
                               ),
                             ),
                           ),
@@ -93,8 +107,15 @@ class SuratView extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    _buildTopIcon(Icons.arrow_back),
-                                    _buildTopIcon(Icons.history),
+                                    InkWell(
+                                      onTap: () => widget.onNavigate(0), // Home
+                                      child: _buildTopIcon(Icons.arrow_back),
+                                    ),
+                                    InkWell(
+                                      onTap: () =>
+                                          widget.onNavigate(3), // Aktivitas
+                                      child: _buildTopIcon(Icons.history),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
@@ -124,7 +145,9 @@ class SuratView extends StatelessWidget {
                     ),
                   ),
 
-                  // Search Bar Melayang
+                  // Menambahkan Dropdown Filter Animasi di Bawah Header (DIPINDAHKAN KE BAWAH)
+
+                  // Search Bar & Filter Melayang
                   Positioned(
                     bottom: 5,
                     left: 24,
@@ -135,7 +158,7 @@ class SuratView extends StatelessWidget {
                         Expanded(
                           child: Container(
                             height: 50,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
@@ -144,50 +167,91 @@ class SuratView extends StatelessWidget {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
+                                  color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 6,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                            child: const Row(
-                              children: [
-                                Icon(
+                            child: TextField(
+                              onSubmitted: (value) {
+                                TopNotification.show(
+                                  context: context,
+                                  message: "Mencari surat: $value",
+                                );
+                              },
+                              decoration: InputDecoration(
+                                hintText: _selectedFilter == "Semua Kategori"
+                                    ? "Cari jenis surat..."
+                                    : "Cari surat ${_selectedFilter.toLowerCase()}...",
+                                hintStyle: const TextStyle(
+                                  color: Color(0xFF9CA3AF),
+                                  fontSize: 14,
+                                ),
+                                prefixIcon: const Icon(
                                   Icons.search,
                                   color: Color(0xFF9CA3AF),
                                   size: 20,
                                 ),
-                                SizedBox(width: 12),
-                                Text(
-                                  "Cari jenis surat...",
-                                  style: TextStyle(
-                                    color: Color(0xFF9CA3AF),
-                                    fontSize: 14,
-                                  ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 14,
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        // Tombol Filter Merah
-                        Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 117, 0, 0),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 6,
-                                offset: const Offset(0, 4),
+                        // Tombol Filter Merah (Animasi Rotasi)
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isFilterOpen = !_isFilterOpen;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            height: 50,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              color: _isFilterOpen
+                                  ? Colors.white
+                                  : const Color.fromARGB(255, 117, 0, 0),
+                              // Agar nyambung dengan filter saat terbuka
+                              borderRadius: _isFilterOpen
+                                  ? const BorderRadius.vertical(
+                                      top: Radius.circular(12),
+                                    )
+                                  : BorderRadius.circular(12),
+                              border: _isFilterOpen
+                                  ? Border.all(
+                                      color: const Color.fromARGB(
+                                        255,
+                                        117,
+                                        0,
+                                        0,
+                                      ),
+                                      width: 2,
+                                    )
+                                  : null,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: AnimatedRotation(
+                              turns: _isFilterOpen ? 0.5 : 0.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: Icon(
+                                _isFilterOpen ? Icons.close : Icons.filter_list,
+                                color: _isFilterOpen
+                                    ? const Color.fromARGB(255, 117, 0, 0)
+                                    : Colors.white,
                               ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.filter_list,
-                            color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -197,11 +261,70 @@ class SuratView extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 24), // Spacer for drop shadow
+            // ==========================================
+            // 2. KATEGORI & FILTER ANIMASI
+            // ==========================================
+            // --- DROPDOWN FILTER (AnimatedSize Pendorong Konten) ---
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: _isFilterOpen
+                  ? Padding(
+                      // Lebar mengikuti lebar Search Bar dan Filter Button (Memenuhi area 24 Kanan - Kiri)
+                      padding: const EdgeInsets.only(
+                        left: 24,
+                        right: 24,
+                        bottom: 16,
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(12),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Pilih Kategori",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                _buildFilterChip("Semua Kategori"),
+                                _buildFilterChip("Administrasi"),
+                                _buildFilterChip("Perizinan"),
+                                _buildFilterChip("Keterangan"),
+                                _buildFilterChip("Hukum"),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox(
+                      width: double.infinity,
+                      height: 0,
+                    ), // Hilang saat tertutup
+            ),
 
-            // ==========================================
-            // 2. KATEGORI SURAT (Grid 2x2)
-            // ==========================================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -221,22 +344,30 @@ class SuratView extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildCategoryCard(
-                          Icons.description,
-                          const Color(0xFF2563EB),
-                          const Color(0xFFEFF6FF),
-                          "Administrasi",
-                          "KK, KTP, Akta",
+                        child: InkWell(
+                          onTap: () =>
+                              _navigateToCategory(context, "Administrasi"),
+                          child: _buildCategoryCard(
+                            Icons.description,
+                            const Color(0xFF2563EB),
+                            const Color(0xFFEFF6FF),
+                            "Administrasi",
+                            "KK, KTP, Akta",
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: _buildCategoryCard(
-                          Icons.domain,
-                          const Color(0xFFEA580C),
-                          const Color(0xFFFFF7ED),
-                          "Perizinan",
-                          "Usaha, Bangunan",
+                        child: InkWell(
+                          onTap: () =>
+                              _navigateToCategory(context, "Perizinan"),
+                          child: _buildCategoryCard(
+                            Icons.domain,
+                            const Color(0xFFEA580C),
+                            const Color(0xFFFFF7ED),
+                            "Perizinan",
+                            "Usaha, Bangunan",
+                          ),
                         ),
                       ),
                     ],
@@ -247,22 +378,29 @@ class SuratView extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildCategoryCard(
-                          Icons.volunteer_activism,
-                          const Color(0xFF9333EA),
-                          const Color(0xFFFAF5FF),
-                          "Keterangan",
-                          "Tidak Mampu, Domisili",
+                        child: InkWell(
+                          onTap: () =>
+                              _navigateToCategory(context, "Keterangan"),
+                          child: _buildCategoryCard(
+                            Icons.volunteer_activism,
+                            const Color(0xFF9333EA),
+                            const Color(0xFFFAF5FF),
+                            "Keterangan",
+                            "Suket, Domisili",
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: _buildCategoryCard(
-                          Icons.gavel,
-                          const Color(0xFF16A34A),
-                          const Color(0xFFF0FDF4),
-                          "Hukum",
-                          "Ahli Waris, Tanah",
+                        child: InkWell(
+                          onTap: () => _navigateToCategory(context, "Hukum"),
+                          child: _buildCategoryCard(
+                            Icons.gavel,
+                            const Color(0xFF16A34A),
+                            const Color(0xFFF0FDF4),
+                            "Hukum",
+                            "Ahli Waris, Tanah",
+                          ),
                         ),
                       ),
                     ],
@@ -290,26 +428,11 @@ class SuratView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildPopularItem(
-                    Icons.home,
-                    "Surat Keterangan Domisili",
-                    "Administrasi Kependudukan",
-                  ),
-                  const SizedBox(height: 12),
-                  _buildPopularItem(
-                    Icons.storefront,
-                    "Surat Izin Usaha Mikro",
-                    "Perizinan Usaha",
-                  ),
-                  const SizedBox(height: 12),
-                  _buildPopularItem(
-                    Icons.family_restroom,
-                    "Surat Keterangan Kelahiran",
-                    "Pencatatan Sipil",
-                  ),
+                  _buildPopularItems(),
                 ],
               ),
             ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -318,15 +441,98 @@ class SuratView extends StatelessWidget {
 
   // --- WIDGET HELPER ---
 
+  // Fitur Navigasi untuk kategori surat terbaru
+  void _navigateToCategory(BuildContext context, String kategori) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SuratCategoryView(categoryName: kategori),
+      ),
+    );
+  }
+
+  // Fungsi dinamis mengambil 3 data pertama acak dari mock data surat
+  Widget _buildPopularItems() {
+    return FutureBuilder<List<SuratModel>>(
+      future: SuratService().getPopularSurat(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: CircularProgressIndicator(color: Color(0xFF8B0000)),
+            ),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) return const SizedBox();
+
+        final popularList = snapshot.data!;
+        return Column(
+          children: popularList.map((item) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: InkWell(
+                onTap: () => _showSuratDialog(context, item.title),
+                child: _buildPopularItem(item.icon, item.title, item.category),
+              ),
+            );
+          }).toList(),
+        );
+      }
+    );
+  }
+
+  void _showSuratDialog(BuildContext context, String judul) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => SuratDetailView(title: judul)),
+    );
+  }
+
   // Ikon Bulat Transparan di Header (Back & History)
   Widget _buildTopIcon(IconData icon) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         shape: BoxShape.circle,
       ),
       child: Icon(icon, color: Colors.white, size: 20),
+    );
+  }
+
+  // Komponen Chip untuk Filter Dropdown
+  Widget _buildFilterChip(String label) {
+    bool isSelected = _selectedFilter == label;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedFilter = label;
+          _isFilterOpen = false; // Tutup filter saat di tap
+        });
+        TopNotification.show(
+          context: context,
+          message: "Filter diterapkan: $label",
+          isSuccess: true,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color.fromARGB(255, 117, 0, 0)
+              : const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : textDark,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 12,
+          ),
+        ),
+      ),
     );
   }
 
@@ -346,7 +552,7 @@ class SuratView extends StatelessWidget {
         border: Border.all(color: const Color(0xFFF9FAFB)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -389,7 +595,7 @@ class SuratView extends StatelessWidget {
         border: Border.all(color: const Color(0xFFF3F4F6)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

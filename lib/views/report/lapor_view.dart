@@ -1,8 +1,24 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../../utils/top_notification.dart';
+import '../../viewmodels/auth_viewmodel.dart';
+import '../../services/cloudinary_service.dart';
+import '../../services/media_service.dart';
+import '../../services/location_service.dart';
+import '../../services/report_service.dart';
+import 'package:geolocator/geolocator.dart';
 
-class LaporView extends StatelessWidget {
+class LaporView extends StatefulWidget {
   const LaporView({super.key});
 
+  @override
+  State<LaporView> createState() => _LaporViewState();
+}
+
+class _LaporViewState extends State<LaporView> {
   // Warna Konsisten WARTA
   static const Color primaryRed = Color(0xFF8B0000);
   static const Color primaryRedDark = Color(0xFF921515); // Warna tombol kirim
@@ -11,6 +27,136 @@ class LaporView extends StatelessWidget {
   static const Color textGray = Color(0xFF94A3B8);
   static const Color goldColor = Color(0xFFD4AF37);
   static const Color borderColor = Color(0xFFE2E8F0);
+
+  final MediaService _mediaService = MediaService();
+  final LocationService _locationService = LocationService();
+  final CloudinaryService _cloudinaryService = CloudinaryService();
+  final ReportService _reportService = ReportService();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  
+  XFile? _selectedImageXFile;
+  File? _selectedImage;
+  Position? _currentPosition;
+  bool _isLoadingLocation = false;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocation();
+  }
+
+  Future<void> _fetchLocation() async {
+    setState(() => _isLoadingLocation = true);
+    final pos = await _locationService.getCurrentLocation();
+    if (mounted) {
+      setState(() {
+        _currentPosition = pos;
+        _isLoadingLocation = false;
+      });
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final xfile = await _mediaService.pickImageXFileFromCamera();
+    if (xfile == null || !mounted) return;
+
+    File? file;
+    if (!kIsWeb) {
+      file = await _mediaService.getDisplayFile(xfile);
+    }
+
+    if (mounted) {
+      setState(() {
+        _selectedImageXFile = xfile;
+        _selectedImage = file;
+      });
+    }
+  }
+
+  Future<void> _submitReport() async {
+    final authVM = context.read<AuthViewModel>();
+    final user = authVM.currentUser;
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+
+    if (user == null) {
+      TopNotification.show(
+        context: context,
+        message: "Sesi login tidak valid. Silakan login ulang.",
+      );
+      return;
+    }
+    if (title.isEmpty || description.isEmpty) {
+      TopNotification.show(
+        context: context,
+        message: "Judul dan deskripsi laporan wajib diisi.",
+      );
+      return;
+    }
+    if (_selectedImageXFile == null) {
+      TopNotification.show(
+        context: context,
+        message: "Foto bukti wajib dilampirkan.",
+      );
+      return;
+    }
+    if (user.rt == null || user.rt!.isEmpty || user.rw == null || user.rw!.isEmpty) {
+      TopNotification.show(
+        context: context,
+        message: "Data RT/RW akun belum lengkap.",
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      String? imageUrl;
+      if (kIsWeb) {
+        imageUrl = await _cloudinaryService.uploadImageXFile(
+          _selectedImageXFile!,
+          folder: 'reports',
+        );
+      } else {
+        imageUrl = await _cloudinaryService.uploadImage(
+          _selectedImage!,
+          folder: 'reports',
+        );
+      }
+
+      if (imageUrl == null || imageUrl.isEmpty) {
+        throw Exception("Gagal upload gambar laporan ke Cloudinary.");
+      }
+
+      await _reportService.submitReport(
+        reporter: user,
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        latitude: _currentPosition?.latitude,
+        longitude: _currentPosition?.longitude,
+      );
+
+      if (!mounted) return;
+      TopNotification.show(
+        context: context,
+        message: "Laporan berhasil dikirim ke RT ${user.rt}.",
+        isSuccess: true,
+      );
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted) Navigator.pop(context);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      TopNotification.show(
+        context: context,
+        message: "Gagal kirim laporan: $e",
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +181,14 @@ class LaporView extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(24, 50, 24, 0),
                     decoration: BoxDecoration(
-                      color: primaryRed,
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 83, 0, 0),
+                          Color(0xFF8B0000),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: const BorderRadius.vertical(
                         bottom: Radius.circular(40),
                       ),
@@ -50,25 +203,42 @@ class LaporView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Tombol Back
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-                        ),
-                        const SizedBox(height: 16),
-                        // Teks Header
-                        const Text(
-                          "Lapor Kejadian",
-                          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Lapor Kejadian tidak sesuai di lingkungan anda",
-                          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13, fontWeight: FontWeight.w500),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Tombol Back
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Teks Header & Sub
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Lapor Kejadian",
+                                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    "Lapor Kejadian tidak sesuai di lingkungan anda",
+                                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13, fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -80,44 +250,66 @@ class LaporView extends StatelessWidget {
                     left: 24,
                     right: 24,
                     child: GestureDetector(
-                      onTap: () {
-                        // TODO: Logika buka kamera (CameraX / FR-23)
-                      },
+                      onTap: _pickImage,
                       child: Container(
                         height: 200,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: goldColor, width: 1.5), // Border Emas
+                          border: Border.all(color: goldColor, width: 1.5),
                           boxShadow: [
                             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
                           ],
+                          image: _selectedImageXFile != null
+                              ? DecorationImage(
+                                  image: kIsWeb
+                                      ? NetworkImage(_selectedImageXFile!.path)
+                                      : FileImage(_selectedImage!) as ImageProvider,
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Ikon Kamera Merah + Lingkaran Transparan
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: primaryRed.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                                border: Border.all(color: primaryRed.withOpacity(0.2)),
+                        child: _selectedImageXFile == null
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: primaryRed.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: primaryRed.withOpacity(0.2)),
+                                    ),
+                                    child: const Icon(Icons.camera_alt, color: primaryRed, size: 36),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    "Ambil Foto Bukti",
+                                    style: TextStyle(color: primaryRed, fontSize: 16, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    "(Kamera Langsung)",
+                                    style: TextStyle(color: textGray, fontSize: 12),
+                                  ),
+                                ],
+                              )
+                            : Stack(
+                                children: [
+                                  Positioned(
+                                    right: 8,
+                                    top: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              child: const Icon(Icons.camera_alt, color: primaryRed, size: 36),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              "Ambil Foto Bukti",
-                              style: TextStyle(color: primaryRed, fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              "(Kamera Langsung)",
-                              style: TextStyle(color: textGray, fontSize: 12),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ),
@@ -135,8 +327,9 @@ class LaporView extends StatelessWidget {
                 children: [
                   // Input: Judul Laporan
                   const Text("JUDUL LAPORAN", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   TextFormField(
+                    controller: _titleController,
                     style: const TextStyle(fontSize: 16),
                     decoration: InputDecoration(
                       hintText: "Contoh: Lampu Jalan Padam",
@@ -159,8 +352,9 @@ class LaporView extends StatelessWidget {
 
                   // Input: Deskripsi Kejadian (Textarea)
                   const Text("DESKRIPSI KEJADIAN", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   TextFormField(
+                    controller: _descriptionController,
                     maxLines: 5, // Membuatnya jadi kotak besar (Textarea)
                     style: const TextStyle(fontSize: 16),
                     decoration: InputDecoration(
@@ -189,10 +383,20 @@ class LaporView extends StatelessWidget {
                       const Icon(Icons.location_on_outlined, color: primaryRed, size: 16),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          "Lokasi dan Waktu akan dicatat secara otomatis\n(Geotagging)",
-                          style: TextStyle(color: textDark.withOpacity(0.7), fontSize: 11, height: 1.5),
-                        ),
+                        child: _isLoadingLocation
+                            ? const Text(
+                                "Sedang mengambil koordinat lokasi...",
+                                style: TextStyle(color: textGray, fontSize: 11, fontStyle: FontStyle.italic),
+                              )
+                            : _currentPosition != null
+                                ? Text(
+                                    "Lokasi Tercatat: ${_currentPosition!.latitude}, ${_currentPosition!.longitude}",
+                                    style: const TextStyle(color: primaryRed, fontSize: 11, fontWeight: FontWeight.w600),
+                                  )
+                                : Text(
+                                    "Gagal mendapatkan lokasi. Pastikan GPS aktif.",
+                                    style: TextStyle(color: textDark.withOpacity(0.7), fontSize: 11),
+                                  ),
                       ),
                     ],
                   ),
@@ -214,10 +418,11 @@ class LaporView extends StatelessWidget {
                         shadowColor: primaryRedDark.withOpacity(0.4),
                       ),
                       onPressed: () {
-                        // TODO: Logika Submit Laporan (FR-25)
+                        if (_isSubmitting) return;
+                        _submitReport();
                       },
-                      child: const Text(
-                        "Kirim Laporan",
+                      child: Text(
+                        _isSubmitting ? "Mengirim..." : "Kirim Laporan",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -232,60 +437,13 @@ class LaporView extends StatelessWidget {
           ],
         ),
       ),
-
-      // ==========================================
-      // FLOATING ACTION BUTTON (KAMERA AKTIF)
-      // ==========================================
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: goldColor,
-        shape: const CircleBorder(side: BorderSide(color: Colors.white, width: 4)),
-        elevation: 6,
-        child: const Icon(Icons.camera_alt, color: Colors.white, size: 28),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      // ==========================================
-      // BOTTOM NAVIGATION BAR
-      // ==========================================
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: SizedBox(
-          height: 65,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildBottomNavItem(Icons.home, "Home", false),
-              _buildBottomNavItem(Icons.mail, "Surat", false),
-              const SizedBox(width: 48), // Ruang Kamera
-              _buildBottomNavItem(Icons.history, "Aktivitas", false), // Belum ada menu aktif di nav bawah ini, sesuaikan nanti
-              _buildBottomNavItem(Icons.person, "Profil", false),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
-  // Helper Item Bottom Navigation
-  Widget _buildBottomNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: isActive ? primaryRed : const Color(0xFF9CA3AF), size: 20),
-        const SizedBox(height: 4),
-        Text(
-          label, 
-          style: TextStyle(
-            color: isActive ? primaryRed : const Color(0xFF9CA3AF), 
-            fontSize: 10, 
-            fontWeight: isActive ? FontWeight.bold : FontWeight.w500
-          )
-        ),
-      ],
-    );
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 }

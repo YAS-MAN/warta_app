@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../utils/top_notification.dart';
 import 'aktivitas_detail_view.dart';
 import '../../models/aktivitas_model.dart';
 import '../../services/aktivitas_service.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 
 class AktivitasView extends StatefulWidget {
   const AktivitasView({super.key});
@@ -153,8 +155,11 @@ class _AktivitasViewState extends State<AktivitasView> {
             // ==========================================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: FutureBuilder<List<AktivitasModel>>(
-                future: AktivitasService().getAktivitasList(),
+              child: Consumer<AuthViewModel>(
+                builder: (context, authVM, _) {
+                  final uid = authVM.currentUser?.uid ?? '';
+                  return StreamBuilder<List<AktivitasModel>>(
+                stream: AktivitasService().streamUserActivities(uid),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -235,6 +240,7 @@ class _AktivitasViewState extends State<AktivitasView> {
                      }).toList(),
                   );
                 }
+              );},
               ),
             ),
           ],

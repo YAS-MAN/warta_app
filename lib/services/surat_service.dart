@@ -39,6 +39,18 @@ class SuratService {
      return popular;
   }
 
+  Future<List<SuratModel>> searchSurat(String query) async {
+    await Future.delayed(const Duration(milliseconds: 250));
+    final keyword = query.trim().toLowerCase();
+    if (keyword.isEmpty) return [];
+
+    return _allSurat.where((surat) {
+      return surat.title.toLowerCase().contains(keyword) ||
+          surat.description.toLowerCase().contains(keyword) ||
+          surat.category.toLowerCase().contains(keyword);
+    }).toList();
+  }
+
   static List<SuratModel> _generateDummySurat() {
     final List<Map<String, dynamic>> rawData = [
       // Administrasi

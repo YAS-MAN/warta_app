@@ -203,6 +203,46 @@ class AuthService {
   }
 
   // ================================================================
+  // UPDATE PROFILE & PASSWORD
+  // ================================================================
+
+  /// Memperbarui informasi pribadi di Firestore
+  Future<void> updateProfile(String uid, Map<String, dynamic> data) async {
+    try {
+      await _firestore.collection('users').doc(uid).update(data);
+    } catch (e) {
+      throw Exception("Gagal menyimpan profil: $e");
+    }
+  }
+
+  /// Memperbarui kata sandi dengan autentikasi ulang (re-authenticate)
+  Future<void> updatePassword(String oldPassword, String newPassword) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || user.email == null) {
+        throw Exception("Sesi telah berakhir. Silakan login kembali.");
+      }
+
+      // Re-authenticate sebelum mengganti kata sandi
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: oldPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+      
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        throw Exception("Kata sandi lama yang Anda masukkan salah.");
+      }
+      throw Exception(_mapFirebaseError(e.code));
+    } catch (e) {
+      throw Exception("Gagal mengubah kata sandi: $e");
+    }
+  }
+
+  // ================================================================
   // LUPA PASSWORD, BIOMETRIK, & REMEMBER ME
   // ================================================================
 

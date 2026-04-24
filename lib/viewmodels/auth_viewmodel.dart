@@ -76,6 +76,48 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  // ================================================================
+  // UPDATE PROFILE & PASSWORD
+  // ================================================================
+
+  /// Update data profil pengguna
+  Future<bool> updateProfile(Map<String, dynamic> data) async {
+    _setLoading(true);
+    _clearError();
+    try {
+      if (_currentUser == null) throw Exception("Sesi pengguna tidak valid");
+      
+      await _authService.updateProfile(_currentUser!.uid, data);
+      
+      // Refresh current user data
+      _currentUser = await _authService.getUserByUid(_currentUser!.uid);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Update kata sandi pengguna
+  Future<bool> updatePassword(String oldPassword, String newPassword) async {
+    _setLoading(true);
+    _clearError();
+    try {
+      await _authService.updatePassword(oldPassword, newPassword);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Cek status aktif biometrik
   Future<bool> isBiometricEnabled() async {
     return await _authService.isBiometricEnabled();

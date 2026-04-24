@@ -1,9 +1,14 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../../utils/top_notification.dart';
+import '../../viewmodels/auth_viewmodel.dart';
+import '../../services/cloudinary_service.dart';
 import '../../services/media_service.dart';
 import '../../services/location_service.dart';
+import '../../services/report_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LaporView extends StatefulWidget {
@@ -25,10 +30,16 @@ class _LaporViewState extends State<LaporView> {
 
   final MediaService _mediaService = MediaService();
   final LocationService _locationService = LocationService();
+  final CloudinaryService _cloudinaryService = CloudinaryService();
+  final ReportService _reportService = ReportService();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   
+  XFile? _selectedImageXFile;
   File? _selectedImage;
   Position? _currentPosition;
   bool _isLoadingLocation = false;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -48,9 +59,102 @@ class _LaporViewState extends State<LaporView> {
   }
 
   Future<void> _pickImage() async {
-    final image = await _mediaService.pickImageFromCamera();
-    if (image != null && mounted) {
-      setState(() => _selectedImage = image);
+    final xfile = await _mediaService.pickImageXFileFromCamera();
+    if (xfile == null || !mounted) return;
+
+    File? file;
+    if (!kIsWeb) {
+      file = await _mediaService.getDisplayFile(xfile);
+    }
+
+    if (mounted) {
+      setState(() {
+        _selectedImageXFile = xfile;
+        _selectedImage = file;
+      });
+    }
+  }
+
+  Future<void> _submitReport() async {
+    final authVM = context.read<AuthViewModel>();
+    final user = authVM.currentUser;
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+
+    if (user == null) {
+      TopNotification.show(
+        context: context,
+        message: "Sesi login tidak valid. Silakan login ulang.",
+      );
+      return;
+    }
+    if (title.isEmpty || description.isEmpty) {
+      TopNotification.show(
+        context: context,
+        message: "Judul dan deskripsi laporan wajib diisi.",
+      );
+      return;
+    }
+    if (_selectedImageXFile == null) {
+      TopNotification.show(
+        context: context,
+        message: "Foto bukti wajib dilampirkan.",
+      );
+      return;
+    }
+    if (user.rt == null || user.rt!.isEmpty || user.rw == null || user.rw!.isEmpty) {
+      TopNotification.show(
+        context: context,
+        message: "Data RT/RW akun belum lengkap.",
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      String? imageUrl;
+      if (kIsWeb) {
+        imageUrl = await _cloudinaryService.uploadImageXFile(
+          _selectedImageXFile!,
+          folder: 'reports',
+        );
+      } else {
+        imageUrl = await _cloudinaryService.uploadImage(
+          _selectedImage!,
+          folder: 'reports',
+        );
+      }
+
+      if (imageUrl == null || imageUrl.isEmpty) {
+        throw Exception("Gagal upload gambar laporan ke Cloudinary.");
+      }
+
+      await _reportService.submitReport(
+        reporter: user,
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        latitude: _currentPosition?.latitude,
+        longitude: _currentPosition?.longitude,
+      );
+
+      if (!mounted) return;
+      TopNotification.show(
+        context: context,
+        message: "Laporan berhasil dikirim ke RT ${user.rt}.",
+        isSuccess: true,
+      );
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted) Navigator.pop(context);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      TopNotification.show(
+        context: context,
+        message: "Gagal kirim laporan: $e",
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -156,14 +260,16 @@ class _LaporViewState extends State<LaporView> {
                           boxShadow: [
                             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
                           ],
-                          image: _selectedImage != null
+                          image: _selectedImageXFile != null
                               ? DecorationImage(
-                                  image: kIsWeb ? NetworkImage(_selectedImage!.path) : FileImage(_selectedImage!) as ImageProvider,
+                                  image: kIsWeb
+                                      ? NetworkImage(_selectedImageXFile!.path)
+                                      : FileImage(_selectedImage!) as ImageProvider,
                                   fit: BoxFit.cover,
                                 )
                               : null,
                         ),
-                        child: _selectedImage == null
+                        child: _selectedImageXFile == null
                             ? Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -223,6 +329,7 @@ class _LaporViewState extends State<LaporView> {
                   const Text("JUDUL LAPORAN", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                   const SizedBox(height: 12),
                   TextFormField(
+                    controller: _titleController,
                     style: const TextStyle(fontSize: 16),
                     decoration: InputDecoration(
                       hintText: "Contoh: Lampu Jalan Padam",
@@ -247,6 +354,7 @@ class _LaporViewState extends State<LaporView> {
                   const Text("DESKRIPSI KEJADIAN", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                   const SizedBox(height: 12),
                   TextFormField(
+                    controller: _descriptionController,
                     maxLines: 5, // Membuatnya jadi kotak besar (Textarea)
                     style: const TextStyle(fontSize: 16),
                     decoration: InputDecoration(
@@ -310,19 +418,11 @@ class _LaporViewState extends State<LaporView> {
                         shadowColor: primaryRedDark.withOpacity(0.4),
                       ),
                       onPressed: () {
-                        TopNotification.show(
-                          context: context,
-                          message: "Laporan kejadian berhasil dikirim!",
-                          isSuccess: true,
-                        );
-                        Future.delayed(const Duration(seconds: 1), () {
-                          if (context.mounted) {
-                            Navigator.popUntil(context, (route) => route.isFirst);
-                          }
-                        });
+                        if (_isSubmitting) return;
+                        _submitReport();
                       },
-                      child: const Text(
-                        "Kirim Laporan",
+                      child: Text(
+                        _isSubmitting ? "Mengirim..." : "Kirim Laporan",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -338,5 +438,12 @@ class _LaporViewState extends State<LaporView> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 }

@@ -6,7 +6,9 @@ import '../../services/berita_api_service.dart';
 import 'berita_detail_view.dart';
 
 class BeritaView extends StatefulWidget {
-  const BeritaView({super.key});
+  final String? initialSearchQuery;
+
+  const BeritaView({super.key, this.initialSearchQuery});
 
   @override
   State<BeritaView> createState() => _BeritaViewState();
@@ -24,7 +26,14 @@ class _BeritaViewState extends State<BeritaView> {
   @override
   void initState() {
     super.initState();
-    _futureBerita = _loadBerita();
+    final initialQuery = widget.initialSearchQuery?.trim() ?? '';
+    if (initialQuery.isNotEmpty) {
+      _searchController.text = initialQuery;
+      _isSearching = true;
+      _futureBerita = _searchBerita(initialQuery);
+    } else {
+      _futureBerita = _loadBerita();
+    }
   }
 
   Future<List<BeritaModel>> _loadBerita({String? query}) async {
@@ -42,8 +51,7 @@ class _BeritaViewState extends State<BeritaView> {
   Future<List<BeritaModel>> _searchBerita(String query) async {
     if (query.trim().isEmpty) return _loadBerita();
     final apiResult = await _apiService.searchBerita(query);
-    if (apiResult.isNotEmpty) return apiResult;
-    return _fallbackService.getBeritaList();
+    return apiResult;
   }
 
   void _onSearch(String value) {
@@ -213,6 +221,34 @@ class _BeritaViewState extends State<BeritaView> {
                     );
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    if (_isSearching) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.search_off, size: 52, color: Colors.grey),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Tidak ada berita untuk kata kunci "${_searchController.text.trim()}".',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: () {
+                                  _searchController.clear();
+                                  _onSearch('');
+                                },
+                                child: const Text('Hapus filter'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

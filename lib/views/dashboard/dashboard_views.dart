@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
+import '../report/report_inbox_views.dart';
 
 class DashboardSuperAdminView extends StatelessWidget {
   const DashboardSuperAdminView({super.key});
@@ -55,7 +56,7 @@ class DashboardLurahView extends StatelessWidget {
       icon: Icons.account_balance_rounded,
       color: const Color(0xFF1565C0),
       accentColor: const Color(0xFF42A5F5),
-      menuItems: const [
+      menuItems: [
         _MenuItem(
           icon: Icons.people_rounded,
           label: 'Data Warga',
@@ -75,6 +76,12 @@ class DashboardLurahView extends StatelessWidget {
           icon: Icons.bar_chart_rounded,
           label: 'Laporan',
           subtitle: 'Laporan wilayah',
+          onTap: (context) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const LurahReportInboxView()),
+            );
+          },
         ),
       ],
     );
@@ -129,7 +136,7 @@ class DashboardRwView extends StatelessWidget {
       icon: Icons.location_city_rounded,
       color: const Color(0xFF6A1B9A),
       accentColor: const Color(0xFFAB47BC),
-      menuItems: const [
+      menuItems: [
         _MenuItem(
           icon: Icons.people_rounded,
           label: 'Data RW',
@@ -144,6 +151,12 @@ class DashboardRwView extends StatelessWidget {
           icon: Icons.report_rounded,
           label: 'Laporan Masuk',
           subtitle: 'Laporan dari seluruh RT',
+          onTap: (context) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RwReportInboxView()),
+            );
+          },
         ),
         _MenuItem(
           icon: Icons.group_work_rounded,
@@ -401,10 +414,12 @@ class _MenuItem {
   final IconData icon;
   final String label;
   final String subtitle;
+  final void Function(BuildContext context)? onTap;
   const _MenuItem({
     required this.icon,
     required this.label,
     required this.subtitle,
+    this.onTap,
   });
 }
 
@@ -425,6 +440,10 @@ class _MenuCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
+          if (item.onTap != null) {
+            item.onTap!(context);
+            return;
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${item.label} — Segera hadir!'),

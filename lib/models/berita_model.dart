@@ -7,6 +7,7 @@ class BeritaModel {
   final String content;
   final String imagePath; // local asset path
   final String? imageUrl;  // remote URL from API
+  final String? sourceUrl; // external link to original article
 
   BeritaModel({
     required this.id,
@@ -17,6 +18,7 @@ class BeritaModel {
     required this.content,
     required this.imagePath,
     this.imageUrl,
+    this.sourceUrl,
   });
 
   /// Maps from DetikNews scraper JSON shape
@@ -30,6 +32,7 @@ class BeritaModel {
       content: json['body'] ?? json['judul'] ?? '',
       imagePath: 'assets/images/city_bg.webp',
       imageUrl: json['gambar'],
+      sourceUrl: json['link'],
     );
   }
 
@@ -61,6 +64,7 @@ class BeritaModel {
       content: contentClean,
       imagePath: 'assets/images/city_bg.webp',
       imageUrl: imageUrl,
+      sourceUrl: link.isNotEmpty ? link : null,
     );
   }
 }

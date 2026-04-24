@@ -3,6 +3,9 @@ import 'package:image_picker/image_picker.dart';
 import '../../utils/top_notification.dart';
 import '../../services/media_service.dart';
 import '../../services/ocr_service.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 
 class ProfilDetailView extends StatefulWidget {
   final String menuName;
@@ -22,22 +25,61 @@ class _ProfilDetailViewState extends State<ProfilDetailView> {
   // States for toggles
   bool _pushNotification = true;
   bool _emailUpdates = false;
-  bool _biometricAuth = true;
+  bool _biometricAuth = false;
 
   // OCR & Media Services
   final MediaService _mediaService = MediaService();
   final OcrService _ocrService = OcrService();
   
-  // Controllers for Edit Profile Form
   final TextEditingController _nikController = TextEditingController();
   final TextEditingController _namaController = TextEditingController();
+  final TextEditingController _teleponController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _alamatController = TextEditingController();
+  
+  // Controllers for Ubah PIN
+  final TextEditingController _oldPassController = TextEditingController();
+  final TextEditingController _newPassController = TextEditingController();
+  final TextEditingController _confirmPassController = TextEditingController();
+
   bool _isScanningKtp = false;
+  bool _isInit = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInit) {
+      final authVM = Provider.of<AuthViewModel>(context, listen: false);
+      final user = authVM.currentUser;
+      if (user != null) {
+        _namaController.text = user.nama;
+        _nikController.text = user.nik;
+        _teleponController.text = user.nomorTelepon ?? '';
+        _emailController.text = user.email;
+        _alamatController.text = user.alamat ?? '';
+      }
+      
+      authVM.isBiometricEnabled().then((isEnabled) {
+        if (mounted) setState(() => _biometricAuth = isEnabled);
+      });
+      
+      _isInit = true;
+    }
+  }
 
   @override
   void dispose() {
-    _ocrService.dispose();
+    if (!kIsWeb) {
+      _ocrService.dispose();
+    }
     _nikController.dispose();
     _namaController.dispose();
+    _teleponController.dispose();
+    _emailController.dispose();
+    _alamatController.dispose();
+    _oldPassController.dispose();
+    _newPassController.dispose();
+    _confirmPassController.dispose();
     super.dispose();
   }
 
@@ -190,14 +232,7 @@ class _ProfilDetailViewState extends State<ProfilDetailView> {
         return _buildProfileForm();
       case "Ubah PIN Keamanan":
       case "Kata Sandi":
-        return _buildForm(
-          [
-            "PIN Kata Sandi Lama",
-            "PIN Kata Sandi Baru",
-            "Konfirmasi Kata Sandi Baru",
-          ],
-          isPassword: true,
-        );
+        return _buildPasswordForm();
       case "Pengaturan Akun":
       case "Notifikasi":
         return Column(
@@ -256,12 +291,13 @@ class _ProfilDetailViewState extends State<ProfilDetailView> {
                 child: TextField(
                   controller: _nikController,
                   keyboardType: TextInputType.number,
+                  readOnly: true, // NIK tidak boleh diedit
                   decoration: const InputDecoration(
-                    labelText: "NIK / No. KTP",
+                    labelText: "NIK / No. KTP (Tidak dapat diubah)",
                     labelStyle: TextStyle(color: textGray),
                     border: UnderlineInputBorder(),
                     focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: primaryRed, width: 2),
+                      borderSide: BorderSide(color: Colors.grey, width: 1),
                     ),
                   ),
                 ),
@@ -291,52 +327,71 @@ class _ProfilDetailViewState extends State<ProfilDetailView> {
           ),
           const SizedBox(height: 24),
           
-          _buildTextField("Nomor Telepon"),
+          const SizedBox(height: 24),
+          
+          _buildTextField("Nomor Telepon", controller: _teleponController),
           const SizedBox(height: 16),
-          _buildTextField("Email"),
+          _buildTextField("Email (Tidak dapat diubah)", controller: _emailController, readOnly: true),
           const SizedBox(height: 16),
-          _buildTextField("Alamat Domisili"),
+          _buildTextField("Alamat Domisili", controller: _alamatController),
           const SizedBox(height: 32),
           
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryRed,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              onPressed: () {
-                TopNotification.show(
-                  context: context,
-                  message: "Data berhasil disimpan",
-                  isSuccess: true,
-                );
-              },
-              child: const Text("Simpan Perubahan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
+          Consumer<AuthViewModel>(
+            builder: (context, authVM, child) {
+              return SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryRed,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: authVM.isLoading ? null : () async {
+                    Map<String, dynamic> data = {
+                      'nama': _namaController.text,
+                      'nomor_telepon': _teleponController.text,
+                      'alamat': _alamatController.text,
+                    };
+                    
+                    bool success = await authVM.updateProfile(data);
+                    
+                    if (mounted) {
+                      TopNotification.show(
+                        context: context,
+                        message: success ? "Data profil berhasil disimpan" : (authVM.errorMessage ?? "Gagal menyimpan"),
+                        isSuccess: success,
+                      );
+                    }
+                  },
+                  child: authVM.isLoading 
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text("Simpan Perubahan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              );
+            }
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTextField(String label, {TextEditingController? controller, bool isPassword = false}) {
+  Widget _buildTextField(String label, {TextEditingController? controller, bool isPassword = false, bool readOnly = false}) {
     return TextField(
       controller: controller,
       obscureText: isPassword,
+      readOnly: readOnly,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: textGray),
         border: const UnderlineInputBorder(),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: primaryRed, width: 2),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: readOnly ? Colors.grey : primaryRed, width: readOnly ? 1 : 2),
         ),
       ),
     );
   }
 
-  Widget _buildForm(List<String> fields, {bool isPassword = false}) {
+  Widget _buildPasswordForm() {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -353,40 +408,54 @@ class _ProfilDetailViewState extends State<ProfilDetailView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ...fields.map((field) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: TextField(
-                  obscureText: isPassword,
-                  decoration: InputDecoration(
-                    labelText: field,
-                    labelStyle: const TextStyle(color: textGray),
-                    border: const UnderlineInputBorder(),
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: primaryRed, width: 2),
-                    ),
+          _buildTextField("Kata Sandi Lama", controller: _oldPassController, isPassword: true),
+          const SizedBox(height: 16),
+          _buildTextField("Kata Sandi Baru", controller: _newPassController, isPassword: true),
+          const SizedBox(height: 16),
+          _buildTextField("Konfirmasi Kata Sandi Baru", controller: _confirmPassController, isPassword: true),
+          const SizedBox(height: 32),
+          
+          Consumer<AuthViewModel>(
+            builder: (context, authVM, child) {
+              return SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryRed,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
+                  onPressed: authVM.isLoading ? null : () async {
+                    if (_newPassController.text != _confirmPassController.text) {
+                      TopNotification.show(context: context, message: "Kata sandi baru tidak cocok dengan konfirmasi.");
+                      return;
+                    }
+                    if (_newPassController.text.length < 6) {
+                      TopNotification.show(context: context, message: "Kata sandi minimal 6 karakter.");
+                      return;
+                    }
+                    
+                    bool success = await authVM.updatePassword(_oldPassController.text, _newPassController.text);
+                    
+                    if (mounted) {
+                      TopNotification.show(
+                        context: context,
+                        message: success ? "Kata sandi berhasil diubah" : (authVM.errorMessage ?? "Gagal mengubah kata sandi"),
+                        isSuccess: success,
+                      );
+                      if (success) {
+                        _oldPassController.clear();
+                        _newPassController.clear();
+                        _confirmPassController.clear();
+                      }
+                    }
+                  },
+                  child: authVM.isLoading 
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text("Ubah Kata Sandi", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
-              )),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryRed,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () {
-                TopNotification.show(
-                  context: context,
-                  message: "Data berhasil disimpan",
-                  isSuccess: true,
-                );
-              },
-              child: const Text("Simpan Perubahan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
+              );
+            }
           ),
         ],
       ),

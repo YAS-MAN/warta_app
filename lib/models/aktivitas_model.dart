@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AktivitasModel {
+  final String userId;
   final String id;
   final String title;
   final String subtitle;
@@ -16,6 +17,7 @@ class AktivitasModel {
   final Color statusBgColor;
 
   AktivitasModel({
+    required this.userId,
     required this.id,
     required this.title,
     required this.subtitle,

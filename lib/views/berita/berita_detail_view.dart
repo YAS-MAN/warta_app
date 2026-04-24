@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/berita_model.dart';
 
 class BeritaDetailView extends StatelessWidget {
@@ -139,6 +140,35 @@ class BeritaDetailView extends StatelessWidget {
                     ),
                     textAlign: TextAlign.justify,
                   ),
+                  const SizedBox(height: 32),
+                  
+                  if (berita.sourceUrl != null && berita.sourceUrl!.isNotEmpty)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B0000),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () async {
+                          final Uri url = Uri.parse(berita.sourceUrl!);
+                          if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Tidak dapat membuka tautan')),
+                              );
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.open_in_browser, size: 20),
+                        label: const Text('Baca Artikel Asli', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    
                   const SizedBox(height: 60),
                 ],
               ),

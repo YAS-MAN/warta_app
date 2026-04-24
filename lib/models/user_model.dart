@@ -23,6 +23,7 @@ class UserModel {
   final String? kelurahan;
   final String? kecamatan;
   final String? kabupaten;
+  final String? nomorTelepon;
   final DateTime? createdAt;
 
   UserModel({
@@ -48,6 +49,7 @@ class UserModel {
     this.kelurahan,
     this.kecamatan,
     this.kabupaten,
+    this.nomorTelepon,
     this.createdAt,
   });
 
@@ -76,6 +78,7 @@ class UserModel {
       kelurahan: data['kelurahan'],
       kecamatan: data['kecamatan'],
       kabupaten: data['kabupaten'],
+      nomorTelepon: data['nomor_telepon'],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -103,7 +106,8 @@ class UserModel {
       if (kelurahan != null) 'kelurahan': kelurahan,
       if (kecamatan != null) 'kecamatan': kecamatan,
       if (kabupaten != null) 'kabupaten': kabupaten,
-      'createdAt': FieldValue.serverTimestamp(),
+      if (nomorTelepon != null) 'nomor_telepon': nomorTelepon,
+      if (createdAt != null) 'createdAt': createdAt,
     };
   }
 

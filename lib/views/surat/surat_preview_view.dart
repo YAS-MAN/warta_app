@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../utils/top_notification.dart';
 import '../../models/surat_model.dart';
 import '../../services/surat_service.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 
 class SuratPreviewView extends StatefulWidget {
   final String title;
@@ -17,18 +19,37 @@ class _SuratPreviewViewState extends State<SuratPreviewView> {
     0xFFE5E7EB,
   ); // Abu-abu gelap khas background mockup document
 
-  void _kirimPengajuan() {
-    TopNotification.show(
-      context: context,
-      message: "Permohonan ${widget.title} berhasil diajukan!",
-      isSuccess: true,
-    );
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        // Pop kembali hingga ke MainView agar seperti sukses selesai
-        Navigator.popUntil(context, (route) => route.isFirst);
-      }
-    });
+  Future<void> _kirimPengajuan() async {
+    final user = context.read<AuthViewModel>().currentUser;
+    if (user == null) {
+      TopNotification.show(
+        context: context,
+        message: "Sesi login tidak ditemukan. Silakan login ulang.",
+      );
+      return;
+    }
+
+    try {
+      await SuratService().submitSurat(user: user, jenisSurat: widget.title);
+      if (!mounted) return;
+      TopNotification.show(
+        context: context,
+        message: "Permohonan ${widget.title} berhasil diajukan!",
+        isSuccess: true,
+      );
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          // Pop kembali hingga ke MainView agar seperti sukses selesai
+          Navigator.popUntil(context, (route) => route.isFirst);
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      TopNotification.show(
+        context: context,
+        message: "Pengajuan gagal dikirim. Coba lagi.",
+      );
+    }
   }
 
   // Helper untuk membuat teks surat dinamis berdasarkan jenis surat

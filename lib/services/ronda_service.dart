@@ -113,21 +113,36 @@ class RondaService {
     required String lokasi,
     required List<String> anggota,
     required String createdByUid,
+    bool isRecurring = false,
   }) async {
-    final normalized = DateTime(tanggal.year, tanggal.month, tanggal.day);
-    final docId = '${_areaKey(rt, rw)}_${normalized.toIso8601String()}';
+    final batch = _firestore.batch();
     final areaKey = _areaKeyValue(rt, rw);
-    await _schedules.doc(docId).set({
-      'areaKey': areaKey,
-      'rt': rt,
-      'rw': rw,
-      'tanggal': Timestamp.fromDate(normalized),
-      'lokasi': lokasi.trim(),
-      'anggota': anggota,
-      'createdBy': createdByUid,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    final weeksToGenerate = isRecurring ? 4 : 1;
+
+    for (int i = 0; i < weeksToGenerate; i++) {
+      final targetDate = tanggal.add(Duration(days: i * 7));
+      final normalized = DateTime(targetDate.year, targetDate.month, targetDate.day);
+      final docId = '${_areaKey(rt, rw)}_${normalized.toIso8601String()}';
+      
+      final ref = _schedules.doc(docId);
+      batch.set(ref, {
+        'areaKey': areaKey,
+        'rt': rt,
+        'rw': rw,
+        'tanggal': Timestamp.fromDate(normalized),
+        'lokasi': lokasi.trim(),
+        'anggota': anggota,
+        'createdBy': createdByUid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+    
+    await batch.commit();
+  }
+
+  Future<void> deleteSchedule(String docId) async {
+    await _schedules.doc(docId).delete();
   }
 
   Stream<List<UserModel>> streamResidentsByArea({

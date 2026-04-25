@@ -12,12 +12,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Stabilkan Firestore di Web: hindari bug internal IndexedDB/persistence.
-  if (kIsWeb) {
-    FirebaseFirestore.instance.settings = const Settings(
-      persistenceEnabled: false,
-    );
-  }
+  // Stabilkan Firestore: Matikan mode offline persistence sementara
+  // untuk menghindari bug cache rusak (corrupt local DB) di perangkat MIUI/Android lama
+  // yang memicu error gRPC Stream Closed (UNAVAILABLE).
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: false,
+  );
 
   runApp(const WartaApp());
 }

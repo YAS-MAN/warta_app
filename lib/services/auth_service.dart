@@ -362,7 +362,10 @@ class AuthService {
 
   /// Ambil data UserModel dari Firestore berdasarkan uid.
   Future<UserModel?> getUserById(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
+    final doc = await _firestore.collection('users').doc(uid).get().timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => throw Exception('Gagal menghubungi Database. Sistem keamanan HP Anda (MIUI) memblokir koneksi ke server.'),
+    );
     if (!doc.exists) return null;
     return UserModel.fromFirestore(doc);
   }

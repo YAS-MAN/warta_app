@@ -24,8 +24,51 @@ class RtManajemenView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: const Color(0xFFF9FAFB),
         appBar: AppBar(
-          backgroundColor: primaryRed, // Disesuaikan dengan WARTA (Merah)
-          elevation: 0,
+          backgroundColor: Colors.transparent, // Menggunakan background dari flexibleSpace
+          elevation: 8,
+          shadowColor: Colors.black.withValues(alpha: 0.5),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(30),
+            ),
+          ),
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 83, 0, 0),
+                  Color(0xFF8B0000),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    right: -20,
+                    top: -10,
+                    child: Transform.rotate(
+                      angle: 12 * 3.14159 / 180,
+                      child: Image(
+                        image: const AssetImage('assets/images/warta_logo.png'),
+                        width: 160,
+                        height: 160,
+                        color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.15),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           title: const Text(
             "Manajemen Pengurus",
             style: TextStyle(
@@ -36,6 +79,7 @@ class RtManajemenView extends StatelessWidget {
           ),
           centerTitle: true,
           bottom: const TabBar(
+            dividerColor: Colors.transparent, // Menghilangkan garis lurus di bawah header
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white54,
             indicatorColor: Colors.white,
@@ -62,11 +106,11 @@ class _TabIuranWarga extends StatefulWidget {
 class _TabIuranWargaState extends State<_TabIuranWarga> {
   final IuranService _iuranService = IuranService();
   final CloudinaryService _cloudinary = CloudinaryService();
-  
+
   final TextEditingController _nominalController = TextEditingController();
   final TextEditingController _bankNameController = TextEditingController();
   final TextEditingController _accNumController = TextEditingController();
-  
+
   bool _isSaving = false;
   XFile? _newQrFile;
 
@@ -86,8 +130,14 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
     }
   }
 
-  void _showEditSettingDialog(IuranRtModel? currentSettings, String kel, String rw, String rt) {
-    _nominalController.text = currentSettings?.nominalWajib.toString() ?? '50000';
+  void _showEditSettingDialog(
+    IuranRtModel? currentSettings,
+    String kel,
+    String rw,
+    String rt,
+  ) {
+    _nominalController.text =
+        currentSettings?.nominalWajib.toString() ?? '50000';
     _bankNameController.text = currentSettings?.bankName ?? '';
     _accNumController.text = currentSettings?.accountNumber ?? '';
     _newQrFile = null;
@@ -100,38 +150,60 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 24, right: 24, top: 24),
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                left: 24,
+                right: 24,
+                top: 24,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Pengaturan Iuran", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Pengaturan Iuran",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _nominalController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: "Nominal Wajib Bulanan (Rp)", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                      labelText: "Nominal Wajib Bulanan (Rp)",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _bankNameController,
-                    decoration: const InputDecoration(labelText: "Nama Bank (Contoh: BCA / DANA)", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                      labelText: "Nama Bank (Contoh: BCA / DANA)",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _accNumController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: "Nomor Rekening", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                      labelText: "Nomor Rekening",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // QR Upload
-                  const Text("QRIS Transfer:", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    "QRIS Transfer:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
                   InkWell(
                     onTap: () async {
                       final picker = ImagePicker();
-                      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                      final pickedFile = await picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
                       if (pickedFile != null) {
                         setModalState(() => _newQrFile = pickedFile);
                       }
@@ -145,16 +217,34 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
                         border: Border.all(color: Colors.grey),
                       ),
                       child: _newQrFile != null
-                          ? (kIsWeb ? Image.network(_newQrFile!.path, fit: BoxFit.contain) : Image.file(File(_newQrFile!.path), fit: BoxFit.contain))
-                          : (currentSettings != null && currentSettings.qrImageUrl.isNotEmpty
-                              ? Image.network(currentSettings.qrImageUrl, fit: BoxFit.contain)
-                              : const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.add_a_photo, color: Colors.grey),
-                                    Text("Ketuk untuk Unggah QRIS", style: TextStyle(color: Colors.grey)),
-                                  ],
-                                )),
+                          ? (kIsWeb
+                                ? Image.network(
+                                    _newQrFile!.path,
+                                    fit: BoxFit.contain,
+                                  )
+                                : Image.file(
+                                    File(_newQrFile!.path),
+                                    fit: BoxFit.contain,
+                                  ))
+                          : (currentSettings != null &&
+                                    currentSettings.qrImageUrl.isNotEmpty
+                                ? Image.network(
+                                    currentSettings.qrImageUrl,
+                                    fit: BoxFit.contain,
+                                  )
+                                : const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_a_photo,
+                                        color: Colors.grey,
+                                      ),
+                                      Text(
+                                        "Ketuk untuk Unggah QRIS",
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
+                                  )),
                     ),
                   ),
 
@@ -163,46 +253,77 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B0000)),
-                      onPressed: _isSaving ? null : () async {
-                        setModalState(() => _isSaving = true);
-                        setState(() => _isSaving = true);
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B0000),
+                      ),
+                      onPressed: _isSaving
+                          ? null
+                          : () async {
+                              setModalState(() => _isSaving = true);
+                              setState(() => _isSaving = true);
 
-                        String qrUrl = currentSettings?.qrImageUrl ?? '';
-                        if (_newQrFile != null) {
-                          String? uploaded = await _cloudinary.uploadImageXFile(_newQrFile!, folder: 'warta_qr');
-                          if (uploaded != null) qrUrl = uploaded;
-                        }
+                              String qrUrl = currentSettings?.qrImageUrl ?? '';
+                              if (_newQrFile != null) {
+                                String? uploaded = await _cloudinary
+                                    .uploadImageXFile(
+                                      _newQrFile!,
+                                      folder: 'warta_qr',
+                                    );
+                                if (uploaded != null) qrUrl = uploaded;
+                              }
 
-                        final newModel = IuranRtModel(
-                          id: '', // abaikan
-                          kelurahan: kel,
-                          rw: rw,
-                          rt: rt,
-                          nominalWajib: int.tryParse(_nominalController.text) ?? 0,
-                          isActive: currentSettings?.isActive ?? false,
-                          qrImageUrl: qrUrl,
-                          bankName: _bankNameController.text,
-                          accountNumber: _accNumController.text,
-                        );
+                              final newModel = IuranRtModel(
+                                id: '', // abaikan
+                                kelurahan: kel,
+                                rw: rw,
+                                rt: rt,
+                                nominalWajib:
+                                    int.tryParse(_nominalController.text) ?? 0,
+                                isActive: currentSettings?.isActive ?? false,
+                                qrImageUrl: qrUrl,
+                                bankName: _bankNameController.text,
+                                accountNumber: _accNumController.text,
+                              );
 
-                        bool success = await _iuranService.saveRtSettings(newModel);
-                        if (mounted) {
-                          Navigator.pop(ctx);
-                          TopNotification.show(context: context, message: success ? "Berhasil disimpan" : "Gagal menyimpan", isSuccess: success, isError: !success);
-                          setState(() => _isSaving = false);
-                        }
-                      },
-                      child: _isSaving 
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Simpan Pengaturan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              bool success = await _iuranService.saveRtSettings(
+                                newModel,
+                              );
+                              if (mounted) {
+                                Navigator.pop(ctx);
+                                TopNotification.show(
+                                  context: context,
+                                  message: success
+                                      ? "Berhasil disimpan"
+                                      : "Gagal menyimpan",
+                                  isSuccess: success,
+                                  isError: !success,
+                                );
+                                setState(() => _isSaving = false);
+                              }
+                            },
+                      child: _isSaving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              "Simpan Pengaturan",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 24),
                 ],
               ),
             );
-          }
+          },
         );
       },
     );
@@ -211,15 +332,21 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<AuthViewModel>(context).currentUser;
-    if (user == null) return const Center(child: Text("Data pengguna tidak ditemukan"));
+    if (user == null)
+      return const Center(child: Text("Data pengguna tidak ditemukan"));
 
     return Stack(
       children: [
         StreamBuilder<IuranRtModel?>(
-          stream: _iuranService.streamRtSettings(user.kelurahan ?? '', user.rw ?? '', user.rt ?? ''),
+          stream: _iuranService.streamRtSettings(
+            user.kelurahan ?? '',
+            user.rw ?? '',
+            user.rt ?? '',
+          ),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-            
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return const Center(child: CircularProgressIndicator());
+
             final settings = snapshot.data;
             bool isActive = settings?.isActive ?? false;
 
@@ -232,7 +359,9 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.2),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,13 +369,22 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Status Iuran Bulan Ini", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const Text(
+                            "Status Iuran Bulan Ini",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                           Switch(
                             value: isActive,
                             activeColor: Colors.green,
                             onChanged: (val) async {
                               final updated = IuranRtModel(
-                                id: '', kelurahan: user.kelurahan ?? '', rw: user.rw ?? '', rt: user.rt ?? '',
+                                id: '',
+                                kelurahan: user.kelurahan ?? '',
+                                rw: user.rw ?? '',
+                                rt: user.rt ?? '',
                                 nominalWajib: settings?.nominalWajib ?? 50000,
                                 isActive: val,
                                 qrImageUrl: settings?.qrImageUrl ?? '',
@@ -262,17 +400,34 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.attach_money, color: Color(0xFF8B0000)),
+                          const Icon(
+                            Icons.attach_money,
+                            color: Color(0xFF8B0000),
+                          ),
                           const SizedBox(width: 8),
-                          Expanded(child: Text("Nominal: Rp ${settings?.nominalWajib ?? 0}", style: const TextStyle(fontWeight: FontWeight.bold))),
+                          Expanded(
+                            child: Text(
+                              "Nominal: Rp ${settings?.nominalWajib ?? 0}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.account_balance, color: Color(0xFF8B0000)),
+                          const Icon(
+                            Icons.account_balance,
+                            color: Color(0xFF8B0000),
+                          ),
                           const SizedBox(width: 8),
-                          Expanded(child: Text("Rek: ${settings?.bankName ?? '-'} (${settings?.accountNumber ?? '-'})")),
+                          Expanded(
+                            child: Text(
+                              "Rek: ${settings?.bankName ?? '-'} (${settings?.accountNumber ?? '-'})",
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -281,17 +436,28 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.settings),
                           label: const Text("Edit Nominal & Rekening/QR"),
-                          onPressed: () => _showEditSettingDialog(settings, user.kelurahan ?? '', user.rw ?? '', user.rt ?? ''),
+                          onPressed: () => _showEditSettingDialog(
+                            settings,
+                            user.kelurahan ?? '',
+                            user.rw ?? '',
+                            user.rt ?? '',
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                const Text("Tinjau Pembayaran Warga", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                const Text(
+                  "Tinjau Pembayaran Warga",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                
+
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -303,20 +469,28 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
                       Icon(Icons.info_outline, color: Color(0xFF8B0000)),
                       SizedBox(width: 12),
                       Expanded(
-                        child: Text("Untuk menyetujui atau menolak bukti transfer warga, silakan buka menu Approval di navigasi bawah.", style: TextStyle(fontSize: 12, color: Color(0xFF8B0000))),
+                        child: Text(
+                          "Untuk menyetujui atau menolak bukti transfer warga, silakan buka menu Approval di navigasi bawah.",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF8B0000),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                )
+                ),
               ],
             );
           },
         ),
-        
+
         if (_isSaving)
           Container(
             color: Colors.black54,
-            child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
           ),
       ],
     );
@@ -344,6 +518,8 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
   bool _isLoading = true;
   bool _loadedOnce = false;
   String? _lastLoadedAreaKey;
+  String _searchQuery = '';
+  bool _isRecurring = false;
   String? _loadError;
 
   void _showComingSoon(BuildContext context, String title) {
@@ -443,6 +619,11 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                 ],
                 SwitchListTile(
                   value: enabled,
+                  activeColor: Colors.white,
+                  activeTrackColor: const Color(0xFF10B981), // Emerald green
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey.shade300,
+                  contentPadding: EdgeInsets.zero,
                   onChanged: (v) async {
                     final prev = enabled;
                     setState(() {
@@ -521,16 +702,26 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
     String rw,
     String uid,
   ) {
-    final wargaOnly = residents.where((u) => u.role == 'warga').toList();
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
-        ),
+    final wargaOnly = residents.where((u) {
+      if (u.role != 'warga') return false;
+      if (_searchQuery.isEmpty) return true;
+      return u.nama.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -542,6 +733,28 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
             Text(
               "Daftar warga terdeteksi: ${wargaOnly.length} orang (RT $rt / RW $rw)",
               style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: "Cari nama warga...",
+                prefixIcon: const Icon(Icons.search, size: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
+                ),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                });
+              },
             ),
             const SizedBox(height: 12),
             Row(
@@ -649,7 +862,7 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                             Expanded(
                               child: Text(
                                 current ??
-                                    "Drop warga ke slot regu #${index + 1}",
+                                    "Kosong (Drop nama ke slot #${index + 1})",
                               ),
                             ),
                             if (current != null)
@@ -666,6 +879,18 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                   ),
                 );
               }),
+            ),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              title: const Text("Ulangi 4 minggu berturut-turut", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              subtitle: const Text("Jadwal akan otomatis disalin ke 4 minggu depan di hari yang sama.", style: TextStyle(fontSize: 11)),
+              value: _isRecurring,
+              activeColor: Colors.white,
+              activeTrackColor: const Color(0xFF10B981),
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: Colors.grey.shade300,
+              contentPadding: EdgeInsets.zero,
+              onChanged: (val) => setState(() => _isRecurring = val),
             ),
             const SizedBox(height: 8),
             SizedBox(
@@ -692,6 +917,7 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                         : _lokasiController.text.trim(),
                     anggota: anggota,
                     createdByUid: uid,
+                    isRecurring: _isRecurring,
                   );
                   if (!mounted) return;
                   setState(() {
@@ -717,7 +943,6 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -768,7 +993,56 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                     color: Color(0xFF8B0000),
                   ),
                 ),
-                const Icon(Icons.shield_outlined, color: Color(0xFF8B0000)),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, size: 18, color: Colors.blue),
+                      constraints: const BoxConstraints(),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      onPressed: () {
+                        setState(() {
+                          _selectedDate = item.tanggal;
+                          _lokasiController.text = item.lokasi;
+                          for (int i = 0; i < 4; i++) {
+                            _slotAssignments[i] = i < item.anggota.length ? item.anggota[i] : null;
+                          }
+                          _isRecurring = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Data dipindahkan ke form atas untuk diedit."), backgroundColor: Colors.blue),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text("Hapus Jadwal?"),
+                            content: const Text("Jadwal ronda ini akan dihapus secara permanen."),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Batal")),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text("Hapus", style: TextStyle(color: Colors.white)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await _rondaService.deleteSchedule(item.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Jadwal dihapus."), backgroundColor: Colors.red),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 8),

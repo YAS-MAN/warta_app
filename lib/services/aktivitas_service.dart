@@ -9,6 +9,8 @@ class AktivitasService {
   static const Color bgSuccess = Color(0xFFD1FAE5);
   static const Color yellowProcess = Color(0xFFF59E0B);
   static const Color bgProcess = Color(0xFFFEF3C7);
+  static const Color blueInfo = Color(0xFF0EA5E9);
+  static const Color bgInfo = Color(0xFFE0F2FE);
   static const Color redFailed = Color(0xFFEF4444);
   static const Color bgFailed = Color(0xFFFEE2E2);
 
@@ -125,11 +127,13 @@ class AktivitasService {
     }
 
     return _ActivityStyle(
-      icon: type == 'report' ? Icons.report_problem : Icons.pending_actions,
-      iconColor: yellowProcess,
-      iconBgColor: bgProcess,
-      statusTextColor: yellowProcess,
-      statusBgColor: bgProcess,
+      icon: type == 'report'
+          ? Icons.report_problem
+          : (type == 'surat' ? Icons.description : Icons.pending_actions),
+      iconColor: type == 'surat' ? blueInfo : yellowProcess,
+      iconBgColor: type == 'surat' ? bgInfo : bgProcess,
+      statusTextColor: type == 'surat' ? blueInfo : yellowProcess,
+      statusBgColor: type == 'surat' ? bgInfo : bgProcess,
     );
   }
 }

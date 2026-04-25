@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/surat_submission_model.dart';
 import '../models/surat_model.dart';
+import '../models/user_model.dart';
+import 'aktivitas_service.dart';
 
 class SuratService {
   // Data Master Surat
   static final List<SuratModel> _allSurat = _generateDummySurat();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AktivitasService _aktivitasService = AktivitasService();
+
+  CollectionReference<Map<String, dynamic>> get _suratSubmissions =>
+      _firestore.collection('surat_submissions');
 
   Future<List<String>> getCategories() async {
     await Future.delayed(const Duration(milliseconds: 300));
@@ -49,6 +58,93 @@ class SuratService {
           surat.description.toLowerCase().contains(keyword) ||
           surat.category.toLowerCase().contains(keyword);
     }).toList();
+  }
+
+  Future<void> submitSurat({
+    required UserModel user,
+    required String jenisSurat,
+  }) async {
+    final trimmedJenisSurat = jenisSurat.trim();
+    final submissionDoc = await _suratSubmissions.add({
+      'userId': user.uid,
+      'nama': user.nama,
+      'nik': user.nik,
+      'jenisSurat': trimmedJenisSurat,
+      'status': 'PROSES',
+      'rt': user.rt ?? '',
+      'rw': user.rw ?? '',
+      'kelurahan': user.kelurahan ?? '',
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    await _aktivitasService.addActivity(
+      userId: user.uid,
+      title: trimmedJenisSurat,
+      subtitle: 'Pengajuan surat berhasil dikirim dan menunggu verifikasi RT.',
+      status: 'PROSES',
+      activityType: 'surat',
+      referenceId: submissionDoc.id,
+    );
+  }
+
+  Stream<List<SuratSubmissionModel>> streamSubmissionsForRt({
+    required String kelurahan,
+    required String rw,
+    required String rt,
+  }) {
+    if (kelurahan.isEmpty || rw.isEmpty || rt.isEmpty) {
+      return Stream.value([]);
+    }
+
+    return _suratSubmissions
+        .where('kelurahan', isEqualTo: kelurahan)
+        .where('rw', isEqualTo: rw)
+        .where('rt', isEqualTo: rt)
+        .where('status', isEqualTo: 'PROSES')
+        .snapshots()
+        .map((snapshot) {
+      final list =
+          snapshot.docs.map(SuratSubmissionModel.fromFirestore).toList();
+      list.sort((a, b) {
+        final left = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final right = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return right.compareTo(left);
+      });
+      return list;
+    });
+  }
+
+  Future<void> updateSubmissionStatus({
+    required String submissionId,
+    required String newStatus,
+    required String actedByUid,
+  }) async {
+    final normalizedStatus = newStatus.toUpperCase();
+    final doc = await _suratSubmissions.doc(submissionId).get();
+    final data = doc.data();
+    if (data == null) return;
+
+    await _suratSubmissions.doc(submissionId).update({
+      'status': normalizedStatus,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'actedByUid': actedByUid,
+    });
+
+    final userId = (data['userId'] ?? '').toString();
+    final jenisSurat = (data['jenisSurat'] ?? 'Pengajuan surat').toString();
+    if (userId.isNotEmpty) {
+      await _aktivitasService.addActivity(
+        userId: userId,
+        title: jenisSurat,
+        subtitle: normalizedStatus == 'BERHASIL'
+            ? 'Pengajuan surat telah disetujui RT.'
+            : 'Pengajuan surat ditolak RT.',
+        status: normalizedStatus,
+        activityType: 'surat',
+        referenceId: submissionId,
+      );
+    }
   }
 
   static List<SuratModel> _generateDummySurat() {

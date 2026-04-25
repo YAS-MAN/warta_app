@@ -259,6 +259,10 @@ class AuthViewModel extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('[AuthViewModel] Gagal load user: $e');
+      _errorMessage = 'Gagal memuat profil: ${e.toString().replaceFirst('Exception: ', '')}';
+      // Jika terjadi error (seperti koneksi Firestore diblokir OS Xiaomi), logout otomatis
+      // agar tidak stuck selamanya di SplashScreen.
+      await logout();
     }
   }
 

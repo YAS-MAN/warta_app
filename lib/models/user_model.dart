@@ -24,6 +24,7 @@ class UserModel {
   final String? kecamatan;
   final String? kabupaten;
   final String? nomorTelepon;
+  final String? rtSignatureUrl;
   final DateTime? createdAt;
 
   UserModel({
@@ -50,6 +51,7 @@ class UserModel {
     this.kecamatan,
     this.kabupaten,
     this.nomorTelepon,
+    this.rtSignatureUrl,
     this.createdAt,
   });
 
@@ -79,7 +81,12 @@ class UserModel {
       kecamatan: data['kecamatan'],
       kabupaten: data['kabupaten'],
       nomorTelepon: data['nomor_telepon'],
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      rtSignatureUrl: data['rtSignatureUrl'],
+      createdAt: data['createdAt'] is Timestamp
+          ? (data['createdAt'] as Timestamp).toDate()
+          : (data['createdAt'] is String
+                ? DateTime.tryParse(data['createdAt'])
+                : null),
     );
   }
 
@@ -107,6 +114,7 @@ class UserModel {
       if (kecamatan != null) 'kecamatan': kecamatan,
       if (kabupaten != null) 'kabupaten': kabupaten,
       if (nomorTelepon != null) 'nomor_telepon': nomorTelepon,
+      if (rtSignatureUrl != null) 'rtSignatureUrl': rtSignatureUrl,
       if (createdAt != null) 'createdAt': createdAt,
     };
   }

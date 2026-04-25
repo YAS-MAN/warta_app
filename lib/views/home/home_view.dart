@@ -533,9 +533,10 @@ class _HomeViewState extends State<HomeView> {
                         ),
                       ],
                     ),
-                    child: FutureBuilder<List<AktivitasModel>>(
-                      future: AktivitasService().getRecentAktivitas(
+                    child: StreamBuilder<List<AktivitasModel>>(
+                      stream: AktivitasService().streamUserActivities(
                         context.read<AuthViewModel>().currentUser?.uid ?? '',
+                        limit: 2,
                       ),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==

@@ -988,7 +988,156 @@ class _ProfilViewState extends State<ProfilView> {
 
                     const SizedBox(height: 32),
 
+                    // --- DOKUMEN KK ---
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "DOKUMEN KEPENDUDUKAN",
+                            style: TextStyle(
+                              color: textGray,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFEF2F2),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(Icons.family_restroom, color: primaryRed, size: 20),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Kartu Keluarga (KK)",
+                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            user.kkUrl != null
+                                                ? "KK sudah terupload — digunakan otomatis di pengajuan surat"
+                                                : "Belum ada — upload agar bisa digunakan di pengajuan surat",
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: user.kkUrl != null ? Colors.green.shade600 : textGray,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (user.kkUrl != null)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.shade100,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          "✓ Ada",
+                                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                if (user.kkUrl != null) ...[
+                                  const SizedBox(height: 12),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.network(
+                                      user.kkUrl!,
+                                      height: 120,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (_, child, progress) =>
+                                          progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2, color: primaryRed)),
+                                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () async {
+                                      final choice = await showModalBottomSheet<String>(
+                                        context: context,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (ctx) => Container(
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                                          ),
+                                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(width: 48, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
+                                              const SizedBox(height: 20),
+                                              const Text('Upload Kartu Keluarga', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textDark)),
+                                              const SizedBox(height: 8),
+                                              const Text('Pilih sumber foto KK Anda', style: TextStyle(color: textGray, fontSize: 13)),
+                                              const SizedBox(height: 24),
+                                              Row(
+                                                children: [
+                                                  Expanded(child: _buildPhotoSourceButton(icon: Icons.camera_alt_rounded, label: 'Kamera', onTap: () => Navigator.pop(ctx, 'camera'))),
+                                                  const SizedBox(width: 16),
+                                                  Expanded(child: _buildPhotoSourceButton(icon: Icons.photo_library_rounded, label: 'Galeri', onTap: () => Navigator.pop(ctx, 'gallery'))),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                      if (choice == null || !mounted) return;
+                                      final success = await authVM.updateKkDoc(fromCamera: choice == 'camera');
+                                      if (!mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                        content: Text(success ? 'KK berhasil diupload!' : authVM.errorMessage ?? 'Upload gagal'),
+                                        backgroundColor: success ? const Color(0xFF16A34A) : primaryRed,
+                                        behavior: SnackBarBehavior.floating,
+                                      ));
+                                    },
+                                    icon: Icon(user.kkUrl != null ? Icons.refresh : Icons.upload_file, size: 16, color: primaryRed),
+                                    label: Text(user.kkUrl != null ? 'Ganti KK' : 'Upload KK', style: const TextStyle(color: primaryRed, fontWeight: FontWeight.w600, fontSize: 13)),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: primaryRed),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
                     // --- AKUN & KEAMANAN ---
+
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(

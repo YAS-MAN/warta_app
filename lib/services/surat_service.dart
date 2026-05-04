@@ -6,7 +6,6 @@ import '../models/user_model.dart';
 import 'aktivitas_service.dart';
 
 class SuratService {
-  // Data Master Surat
   static final List<SuratModel> _allSurat = _generateDummySurat();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AktivitasService _aktivitasService = AktivitasService();
@@ -25,34 +24,31 @@ class SuratService {
   }
 
   Future<SuratModel?> getSuratByTitle(String title) async {
-     await Future.delayed(const Duration(milliseconds: 200));
-     try {
-       return _allSurat.firstWhere((s) => s.title.toLowerCase() == title.toLowerCase());
-     } catch (e) {
-       return null;
-     }
+    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      return _allSurat.firstWhere(
+          (s) => s.title.toLowerCase() == title.toLowerCase());
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<List<SuratModel>> getPopularSurat() async {
-     await Future.delayed(const Duration(milliseconds: 300));
-     // Mengambil 3 sampel dasar
-     List<SuratModel> popular = [];
-     var admin = _allSurat.where((s) => s.category == "Administrasi").toList();
-     var izin = _allSurat.where((s) => s.category == "Perizinan").toList();
-     var ket = _allSurat.where((s) => s.category == "Keterangan").toList();
-
-     if (admin.isNotEmpty) popular.add(admin[0]);
-     if (izin.isNotEmpty) popular.add(izin[0]);
-     if (ket.isNotEmpty) popular.add(ket[0]);
-
-     return popular;
+    await Future.delayed(const Duration(milliseconds: 300));
+    List<SuratModel> popular = [];
+    var admin = _allSurat.where((s) => s.category == "Administrasi").toList();
+    var izin = _allSurat.where((s) => s.category == "Perizinan").toList();
+    var ket = _allSurat.where((s) => s.category == "Keterangan").toList();
+    if (admin.isNotEmpty) popular.add(admin[0]);
+    if (izin.isNotEmpty) popular.add(izin[0]);
+    if (ket.isNotEmpty) popular.add(ket[0]);
+    return popular;
   }
 
   Future<List<SuratModel>> searchSurat(String query) async {
     await Future.delayed(const Duration(milliseconds: 250));
     final keyword = query.trim().toLowerCase();
     if (keyword.isEmpty) return [];
-
     return _allSurat.where((surat) {
       return surat.title.toLowerCase().contains(keyword) ||
           surat.description.toLowerCase().contains(keyword) ||
@@ -96,7 +92,6 @@ class SuratService {
     if (kelurahan.isEmpty || rw.isEmpty || rt.isEmpty) {
       return Stream.value([]);
     }
-
     return _suratSubmissions
         .where('kelurahan', isEqualTo: kelurahan)
         .where('rw', isEqualTo: rw)
@@ -147,102 +142,401 @@ class SuratService {
     }
   }
 
+  // ─── MASTER DATA SURAT ───────────────────────────────────────────────────────
+
+  static const _reqKtp = SuratRequirement(
+    id: 'ktp_scan',
+    label: 'Scan KTP / E-KTP',
+    description: 'Foto KTP yang terdaftar saat registrasi',
+    type: RequirementType.auto,
+    autoSourceField: 'ktpUrl',
+  );
+
+  static const _reqKk = SuratRequirement(
+    id: 'kk_scan',
+    label: 'Scan Kartu Keluarga (KK)',
+    description: 'Foto KK dari profil Anda',
+    type: RequirementType.auto,
+    autoSourceField: 'kkUrl',
+  );
+
+  static const _reqFormF102 = SuratRequirement(
+    id: 'form_f102',
+    label: 'Formulir F1-02 (Peristiwa Kependudukan)',
+    description: 'Download & isi formulir dari Disdukcapil, lalu upload foto/scan',
+    type: RequirementType.upload,
+  );
+
+  static const _reqFormF103 = SuratRequirement(
+    id: 'form_f103',
+    label: 'Formulir F1-03 (Perpindahan Penduduk)',
+    description: 'Download & isi formulir perpindahan dari Disdukcapil',
+    type: RequirementType.upload,
+  );
+
+  static const _reqFormF201 = SuratRequirement(
+    id: 'form_f201',
+    label: 'Formulir F2-01 (Pelaporan Pencatatan Sipil)',
+    description: 'Download & isi formulir F2.01 dari Disdukcapil, lalu upload',
+    type: RequirementType.upload,
+  );
+
   static List<SuratModel> _generateDummySurat() {
-    final List<Map<String, dynamic>> rawData = [
-      // Administrasi
-      {"cat": "Administrasi", "title": "Kartu Keluarga (KK)", "desc": "Pembuatan atau Perubahan KK", "icon": Icons.family_restroom},
-      {"cat": "Administrasi", "title": "Kartu Tanda Penduduk (KTP)", "desc": "Perekaman atau Penggantian KTP Baru", "icon": Icons.badge},
-      {"cat": "Administrasi", "title": "Akta Kelahiran", "desc": "Penerbitan Surat Keterangan Lahir", "icon": Icons.child_care},
-      {"cat": "Administrasi", "title": "Akta Kematian", "desc": "Pelaporan Meninggal Dunia", "icon": Icons.nights_stay},
-      {"cat": "Administrasi", "title": "Surat Pindah", "desc": "Mengurus Perpindahan Domisili", "icon": Icons.transfer_within_a_station},
-      // Perizinan
-      {"cat": "Perizinan", "title": "Surat Izin Tempat Usaha (SITU)", "desc": "Pendaftaran Lokasi Usaha", "icon": Icons.storefront},
-      {"cat": "Perizinan", "title": "Izin Mendirikan Bangunan (IMB)", "desc": "Persetujuan Pendirian Bangunan", "icon": Icons.domain},
-      {"cat": "Perizinan", "title": "Izin Reklame", "desc": "Pemasangan Papan Reklame/Spanduk", "icon": Icons.campaign},
-      {"cat": "Perizinan", "title": "Izin Keramaian", "desc": "Pemberitahuan Acara Skala Besar", "icon": Icons.festival},
-      // Keterangan
-      {"cat": "Keterangan", "title": "Surat Keterangan Domisili", "desc": "Bukti Tempat Tinggal Sementara", "icon": Icons.location_on},
-      {"cat": "Keterangan", "title": "Keterangan Tidak Mampu (SKTM)", "desc": "Pengajuan Keringanan Biaya", "icon": Icons.volunteer_activism},
-      {"cat": "Keterangan", "title": "Surat Keterangan Usaha (SKU)", "desc": "Pernyataan Memiliki Usaha", "icon": Icons.storefront},
-      {"cat": "Keterangan", "title": "Pengantar SKCK", "desc": "Syarat Pembuatan Catatan Kepolisian", "icon": Icons.local_police},
-      // Hukum
-      {"cat": "Hukum", "title": "Keterangan Ahli Waris", "desc": "Pernyataan Silsilah Keluarga", "icon": Icons.account_balance},
-      {"cat": "Hukum", "title": "Keterangan Belum Menikah", "desc": "Status Perkawinan Lajang", "icon": Icons.favorite_border},
-      {"cat": "Hukum", "title": "Keterangan Janda/Duda", "desc": "Pernyataan Status Cerai Mati/Hidup", "icon": Icons.favorite_border},
-      {"cat": "Hukum", "title": "Surat Kuasa Tanah", "desc": "Pelimpahan Wewenang Properti", "icon": Icons.landscape},
-    ];
-
-    List<SuratModel> result = [];
-    int idCounter = 1;
-
-    for (var data in rawData) {
-      String t = (data["title"] as String).toLowerCase();
-      
-      // -- Requirements --
-      List<String> reqs = ["Fotokopi KTP / E-KTP", "Fotokopi Kartu Keluarga (KK)"];
-      if (t.contains("usaha") || t.contains("bangunan") || t.contains("reklame")) {
-        reqs.add("Foto Tempat Usaha / Objek Lengkap");
-        reqs.add("Surat Pengantar RT/RW");
-      } else if (t.contains("pindah") || t.contains("domisili")) {
-        reqs.add("Surat Pengantar RT/RW");
-        reqs.add("Bukti Kepemilikan Lahan / Sewa");
-      } else if (t.contains("tidak mampu") || t.contains("sktm")) {
-        reqs.add("Surat Pengantar RT/RW");
-        reqs.add("Surat Pernyataan Bermaterai");
-      } else {
-        reqs.add("Surat Pengantar RT/RW");
-      }
-
-      // -- Fields --
-      List<SuratFieldModel> fields = [];
-      if (t.contains("usaha") || t.contains("sku") || t.contains("situ")) {
-        fields.add(SuratFieldModel(label: "Nama Usaha", hint: "Misal: Warung Sembako Berkah"));
-        fields.add(SuratFieldModel(label: "Jenis Usaha", hint: "Misal: Kuliner / Dagang"));
-        fields.add(SuratFieldModel(label: "Alamat Usaha", hint: "Masukkan alamat lengkap usaha", maxLines: 3));
-      } else if (t.contains("pindah")) {
-        fields.add(SuratFieldModel(label: "Alamat Tujuan", hint: "Masukkan alamat domisili baru", maxLines: 3));
-        fields.add(SuratFieldModel(label: "Alasan Pindah", hint: "Misal: Mengikuti Keluarga / Pekerjaan"));
-      } else if (t.contains("tidak mampu") || t.contains("sktm")) {
-        fields.add(SuratFieldModel(label: "Keperluan / Tujuan", hint: "Misal: Pendaftaran Sekolah Anak"));
-        fields.add(SuratFieldModel(label: "Penghasilan Per Bulan", hint: "Misal: Rp 1.500.000"));
-      } else {
-        fields.add(SuratFieldModel(label: "Keperluan", hint: "Jelaskan keperluan pengajuan surat ini", maxLines: 2));
-      }
-
-      // -- Template Konten --
-      String templateKonten = "";
-      if (t.contains("usaha") || t.contains("sku") || t.contains("situ")) {
-        templateKonten = "Menerangkan bahwa individu di atas memiliki usaha yang berdomisili di Kelurahan Maju. Surat keterangan ini menyatakan legalitas dasar usaha tersebut untuk keperluan administrasi perbankan atau izin lanjutan.";
-      } else if (t.contains("kk") || t.contains("ktp") || t.contains("akta")) {
-        templateKonten = "Menerangkan bahwa individu di atas sedang dalam proses pengurusan dokumen kependudukan sipil tingkat Kelurahan. Surat pengantar ini wajib dibawa ke Dinas Kependudukan dan Pencatatan Sipil.";
-      } else if (t.contains("pindah")) {
-        templateKonten = "Menerangkan bahwa individu di atas telah mengajukan permohonan pindah domisili dari Kelurahan Maju ke alamat tujuan. Semua catatan kewajiban di kelurahan asal telah diselesaikan.";
-      } else if (t.contains("tidak mampu") || t.contains("sktm")) {
-        templateKonten = "Menerangkan bahwa individu tersebut di atas benar-benar warga Kelurahan Maju yang berstatus janda/duda/berpenghasilan rendah, sehingga layak untuk mendapatkan program bantuan kesejahteraan atau keringanan biaya pendidikan.";
-      } else if (t.contains("skck")) {
-        templateKonten = "Menerangkan bahwa warga tersebut di atas berkelakuan baik, tidak bermasalah dalam lingkungan sosial, dan surat pengantar ini digunakan untuk keperluan kepolisian (SKCK).";
-      } else if (data["cat"] == "Hukum") {
-        templateKonten = "Menerangkan status hukum dan/atau sipil individu di atas telah sesuai dengan catatan register Kelurahan Maju berdasar bukti-bukti sah yang dilampirkan.";
-      } else {
-        templateKonten = "Menerangkan bahwa individu di atas adalah benar warga Kelurahan Maju dan bermaksud mengurus keperluan administrasi sesuai ketentuan. Demikian surat ini dibuat agar dapat dipergunakan sebagaimana mestinya.";
-      }
-
-      var iconData = data["icon"] as IconData;
-
-      result.add(SuratModel(
-        id: "SRT-${idCounter.toString().padLeft(3, '0')}",
-        category: data["cat"],
-        title: data["title"],
-        description: data["desc"],
-        iconCodePoint: iconData.codePoint,
-        iconFontFamily: iconData.fontFamily,
+    int id = 1;
+    SuratModel mk(String cat, String title, String desc, IconData icon,
+        List<SuratRequirement> reqs, List<SuratFieldModel> fields,
+        String tmpl) {
+      return SuratModel(
+        id: 'SRT-${(id++).toString().padLeft(3, '0')}',
+        category: cat,
+        title: title,
+        description: desc,
+        iconCodePoint: icon.codePoint,
+        iconFontFamily: icon.fontFamily,
         requirements: reqs,
         fields: fields,
-        templateKonten: templateKonten,
-      ));
-      idCounter++;
+        templateKonten: tmpl,
+      );
     }
 
-    return result;
+    return [
+      // ── ADMINISTRASI ──────────────────────────────────────────────────────
+      mk(
+        "Administrasi", "Kartu Keluarga (KK)", "Pembuatan atau Perubahan KK",
+        Icons.family_restroom,
+        [
+          _reqKtp,
+          _reqKk,
+          _reqFormF102,
+          const SuratRequirement(
+            id: 'dok_pendukung_kk',
+            label: 'Dokumen Pendukung (Buku Nikah / Surat Cerai / Pernyataan)',
+            description: 'Sesuai jenis permohonan KK Anda',
+            type: RequirementType.upload,
+          ),
+        ],
+        [SuratFieldModel(label: "Jenis Permohonan KK", hint: "Misal: Pecah KK / Cetak Ulang")],
+        "Menerangkan bahwa individu di atas sedang dalam proses pengurusan Kartu Keluarga melalui sistem WARTA.",
+      ),
+      mk(
+        "Administrasi", "Kartu Tanda Penduduk (KTP)", "Perekaman atau Penggantian KTP Baru",
+        Icons.badge,
+        [
+          _reqKk,
+          _reqFormF102,
+          const SuratRequirement(
+            id: 'surat_hilang_ktp',
+            label: 'Surat Kehilangan dari Kepolisian (jika hilang/rusak)',
+            description: 'Surat keterangan kehilangan KTP dari Polsek/Polres',
+            type: RequirementType.upload,
+          ),
+        ],
+        [SuratFieldModel(label: "Jenis Permohonan KTP", hint: "Misal: Perekaman Baru / Hilang / Rusak")],
+        "Menerangkan bahwa individu di atas sedang dalam proses pengurusan KTP-el melalui Disdukcapil Surabaya.",
+      ),
+      mk(
+        "Administrasi", "Akta Kelahiran", "Penerbitan Surat Keterangan Lahir",
+        Icons.child_care,
+        [
+          _reqKtp,
+          _reqKk,
+          _reqFormF201,
+          const SuratRequirement(
+            id: 'surat_lahir_bidan',
+            label: 'Surat Keterangan Lahir dari Bidan / Dokter / RS',
+            description: 'Surat resmi tempat kelahiran anak',
+            type: RequirementType.upload,
+          ),
+          const SuratRequirement(
+            id: 'buku_nikah_ortu',
+            label: 'Buku Nikah / Akta Perkawinan Orang Tua',
+            description: 'Bukti perkawinan sah orang tua',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Nama Anak", hint: "Nama lengkap anak"),
+          SuratFieldModel(label: "Tanggal Lahir Anak", hint: "DD/MM/YYYY"),
+          SuratFieldModel(label: "Tempat Lahir", hint: "Kota/Kabupaten"),
+        ],
+        "Menerangkan bahwa individu di atas mengajukan permohonan Akta Kelahiran untuk anggota keluarga melalui Disdukcapil Surabaya.",
+      ),
+      mk(
+        "Administrasi", "Akta Kematian", "Pelaporan Meninggal Dunia",
+        Icons.nights_stay,
+        [
+          _reqKtp,
+          _reqFormF201,
+          const SuratRequirement(
+            id: 'surat_kematian_dokter',
+            label: 'Surat Keterangan Kematian dari Dokter / Pernyataan Keluarga',
+            description: 'Surat resmi yang menerangkan kematian',
+            type: RequirementType.upload,
+          ),
+          const SuratRequirement(
+            id: 'ktp_jenazah',
+            label: 'NIK / KTP / KK Jenazah',
+            description: 'Dokumen identitas almarhum/almarhumah',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Nama Almarhum/ah", hint: "Nama lengkap jenazah"),
+          SuratFieldModel(label: "Tanggal Meninggal", hint: "DD/MM/YYYY"),
+        ],
+        "Menerangkan bahwa individu di atas mengajukan permohonan Akta Kematian melalui sistem WARTA.",
+      ),
+      mk(
+        "Administrasi", "Surat Pindah", "Mengurus Perpindahan Domisili",
+        Icons.transfer_within_a_station,
+        [
+          _reqKtp,
+          _reqKk,
+          _reqFormF102,
+          _reqFormF103,
+          const SuratRequirement(
+            id: 'skpwni',
+            label: 'Surat Keterangan Pindah WNI (SKPWNI)',
+            description: 'Surat pindah dari daerah asal',
+            type: RequirementType.upload,
+          ),
+          const SuratRequirement(
+            id: 'alamat_tujuan',
+            label: 'Alamat Tujuan Pindah',
+            description: 'Isi alamat lengkap tujuan pindah domisili',
+            type: RequirementType.text,
+            hint: 'Jl. ... No. ... RT/RW ... Kelurahan ... Kota ...',
+          ),
+          const SuratRequirement(
+            id: 'alasan_pindah',
+            label: 'Alasan Pindah',
+            description: 'Sebutkan alasan kepindahan Anda',
+            type: RequirementType.text,
+            hint: 'Misal: Mengikuti keluarga / Pekerjaan',
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Alamat Tujuan", hint: "Alamat lengkap domisili baru", maxLines: 3),
+          SuratFieldModel(label: "Alasan Pindah", hint: "Misal: Mengikuti Keluarga / Pekerjaan"),
+        ],
+        "Menerangkan bahwa individu di atas mengajukan permohonan pindah domisili dari wilayah ini ke alamat tujuan.",
+      ),
+
+      // ── PERIZINAN ────────────────────────────────────────────────────────
+      mk(
+        "Perizinan", "Surat Izin Tempat Usaha (SITU)", "Pendaftaran Lokasi Usaha",
+        Icons.storefront,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'foto_tempat_usaha',
+            label: 'Foto Tempat Usaha',
+            description: 'Foto tampak depan lokasi usaha yang jelas',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Nama Usaha", hint: "Misal: Warung Sembako Berkah"),
+          SuratFieldModel(label: "Jenis Usaha", hint: "Misal: Kuliner / Dagang"),
+          SuratFieldModel(label: "Alamat Usaha", hint: "Alamat lengkap usaha", maxLines: 3),
+        ],
+        "Menerangkan bahwa individu di atas memiliki usaha yang berdomisili di wilayah ini. Surat keterangan ini menyatakan legalitas dasar usaha tersebut.",
+      ),
+      mk(
+        "Perizinan", "Izin Mendirikan Bangunan (IMB)", "Persetujuan Pendirian Bangunan",
+        Icons.domain,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'foto_lahan',
+            label: 'Foto Lahan / Lokasi Bangunan',
+            description: 'Foto kondisi lahan saat ini',
+            type: RequirementType.upload,
+          ),
+          const SuratRequirement(
+            id: 'sertifikat_tanah',
+            label: 'Sertifikat / Bukti Kepemilikan Tanah',
+            description: 'Dokumen kepemilikan lahan',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Alamat Bangunan", hint: "Alamat lengkap lokasi bangunan", maxLines: 2),
+          SuratFieldModel(label: "Jenis Bangunan", hint: "Misal: Rumah Tinggal / Ruko"),
+        ],
+        "Menerangkan bahwa individu di atas mengajukan permohonan izin mendirikan bangunan di wilayah ini.",
+      ),
+      mk(
+        "Perizinan", "Izin Reklame", "Pemasangan Papan Reklame/Spanduk",
+        Icons.campaign,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'foto_reklame',
+            label: 'Foto Desain / Objek Reklame',
+            description: 'Foto atau desain reklame yang akan dipasang',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Jenis Reklame", hint: "Misal: Spanduk / Billboard / Neon Box"),
+          SuratFieldModel(label: "Lokasi Pemasangan", hint: "Alamat lengkap lokasi reklame"),
+        ],
+        "Menerangkan bahwa individu di atas mengajukan permohonan izin pemasangan reklame di wilayah ini.",
+      ),
+      mk(
+        "Perizinan", "Izin Keramaian", "Pemberitahuan Acara Skala Besar",
+        Icons.festival,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'proposal_acara',
+            label: 'Proposal / Rencana Kegiatan',
+            description: 'Dokumen rencana acara secara lengkap',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Nama Acara", hint: "Misal: Peringatan HUT RI ke-80"),
+          SuratFieldModel(label: "Tanggal Acara", hint: "DD/MM/YYYY"),
+          SuratFieldModel(label: "Lokasi Acara", hint: "Alamat lengkap lokasi kegiatan"),
+        ],
+        "Menerangkan bahwa individu di atas mengajukan permohonan izin keramaian untuk acara yang akan diselenggarakan di wilayah ini.",
+      ),
+
+      // ── KETERANGAN ───────────────────────────────────────────────────────
+      mk(
+        "Keterangan", "Surat Keterangan Domisili", "Bukti Tempat Tinggal Sementara",
+        Icons.location_on,
+        [
+          _reqKtp,
+          _reqKk,
+        ],
+        [SuratFieldModel(label: "Keperluan", hint: "Misal: Pendaftaran Sekolah / Keperluan Bank")],
+        "Menerangkan bahwa individu di atas benar-benar berdomisili di wilayah ini sesuai data kependudukan.",
+      ),
+      mk(
+        "Keterangan", "Keterangan Tidak Mampu (SKTM)", "Pengajuan Keringanan Biaya",
+        Icons.volunteer_activism,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'surat_pernyataan_bermaterai',
+            label: 'Surat Pernyataan Tidak Mampu Bermaterai',
+            description: 'Pernyataan kondisi ekonomi yang ditandatangani di atas materai',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Keperluan / Tujuan SKTM", hint: "Misal: Pendaftaran Sekolah Anak"),
+          SuratFieldModel(label: "Penghasilan Per Bulan", hint: "Misal: Rp 1.500.000"),
+        ],
+        "Menerangkan bahwa individu tersebut di atas adalah warga yang berstatus tidak mampu secara ekonomi, sehingga layak mendapat keringanan.",
+      ),
+      mk(
+        "Keterangan", "Surat Keterangan Usaha (SKU)", "Pernyataan Memiliki Usaha",
+        Icons.storefront,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'foto_usaha_sku',
+            label: 'Foto Tempat / Kegiatan Usaha',
+            description: 'Foto yang membuktikan keberadaan usaha',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Nama Usaha", hint: "Misal: Warung Sembako Berkah"),
+          SuratFieldModel(label: "Jenis Usaha", hint: "Misal: Kuliner / Dagang"),
+          SuratFieldModel(label: "Alamat Usaha", hint: "Masukkan alamat lengkap usaha", maxLines: 3),
+        ],
+        "Menerangkan bahwa individu di atas memiliki usaha yang berdomisili di wilayah ini.",
+      ),
+      mk(
+        "Keterangan", "Pengantar SKCK", "Syarat Pembuatan Catatan Kepolisian",
+        Icons.local_police,
+        [
+          _reqKtp,
+          _reqKk,
+        ],
+        [SuratFieldModel(label: "Keperluan SKCK", hint: "Misal: Melamar Pekerjaan / Pendaftaran PNS")],
+        "Menerangkan bahwa warga tersebut di atas berkelakuan baik dan surat pengantar ini digunakan untuk keperluan pembuatan SKCK.",
+      ),
+
+      // ── HUKUM ────────────────────────────────────────────────────────────
+      mk(
+        "Hukum", "Keterangan Ahli Waris", "Pernyataan Silsilah Keluarga",
+        Icons.account_balance,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'akta_lahir_waris',
+            label: 'Akta Kelahiran / Surat Kematian Pewaris',
+            description: 'Dokumen yang membuktikan hubungan waris',
+            type: RequirementType.upload,
+          ),
+        ],
+        [SuratFieldModel(label: "Nama Pewaris (Almarhum/ah)", hint: "Nama lengkap yang meninggal")],
+        "Menerangkan status silsilah dan hak ahli waris individu di atas sesuai catatan register kelurahan.",
+      ),
+      mk(
+        "Hukum", "Keterangan Belum Menikah", "Status Perkawinan Lajang",
+        Icons.favorite_border,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'dok_status_belum_nikah',
+            label: 'Surat Pernyataan Belum Menikah (jika diperlukan)',
+            description: 'Surat pernyataan bermaterai status lajang',
+            type: RequirementType.upload,
+          ),
+        ],
+        [SuratFieldModel(label: "Keperluan", hint: "Misal: Melamar Pekerjaan / Pendaftaran Nikah")],
+        "Menerangkan bahwa individu di atas berstatus belum menikah sesuai catatan register kelurahan.",
+      ),
+      mk(
+        "Hukum", "Keterangan Janda/Duda", "Pernyataan Status Cerai Mati/Hidup",
+        Icons.favorite_border,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'dok_cerai',
+            label: 'Akta Cerai / Akta Kematian Pasangan',
+            description: 'Bukti status cerai hidup atau cerai mati',
+            type: RequirementType.upload,
+          ),
+        ],
+        [SuratFieldModel(label: "Keperluan", hint: "Misal: Keperluan Administrasi / Menikah Kembali")],
+        "Menerangkan status hukum individu di atas sebagai janda/duda sesuai bukti sah yang dilampirkan.",
+      ),
+      mk(
+        "Hukum", "Surat Kuasa Tanah", "Pelimpahan Wewenang Properti",
+        Icons.landscape,
+        [
+          _reqKtp,
+          _reqKk,
+          const SuratRequirement(
+            id: 'sertifikat_tanah_kuasa',
+            label: 'Sertifikat / Bukti Kepemilikan Tanah',
+            description: 'Dokumen tanah yang akan dikuasakan',
+            type: RequirementType.upload,
+          ),
+        ],
+        [
+          SuratFieldModel(label: "Nama Penerima Kuasa", hint: "Nama lengkap penerima kuasa"),
+          SuratFieldModel(label: "Objek Kuasa (Tanah/Properti)", hint: "Deskripsi singkat objek", maxLines: 2),
+        ],
+        "Menerangkan bahwa individu di atas memberikan kuasa penuh atas pengelolaan properti/tanah kepada pihak yang tercantum.",
+      ),
+    ];
   }
 }

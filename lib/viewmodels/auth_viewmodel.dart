@@ -311,6 +311,47 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // ================================================================
+  // UPDATE SCAN KK (Kartu Keluarga)
+  // ================================================================
+
+  /// Pilih foto KK dari galeri atau kamera lalu upload ke Cloudinary.
+  /// Menyimpan URL baru ke field 'kkUrl' di Firestore dan memperbarui currentUser.
+  /// Returns true jika berhasil.
+  Future<bool> updateKkDoc({bool fromCamera = false}) async {
+    if (_currentUser == null) {
+      _errorMessage = 'Tidak ada pengguna aktif.';
+      notifyListeners();
+      return false;
+    }
+
+    _setLoading(true);
+    _clearError();
+    try {
+      final mediaService = MediaService();
+      final XFile? xFile = fromCamera
+          ? await mediaService.pickImageXFileFromCamera()
+          : await mediaService.pickImageXFileFromGallery();
+
+      if (xFile == null) return false;
+
+      final updatedUser = await _authService.updateKkDoc(
+        _currentUser!.uid,
+        xFile,
+      );
+      _currentUser = updatedUser;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+
+  // ================================================================
   // LOGOUT
   // ================================================================
 

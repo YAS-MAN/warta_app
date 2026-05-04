@@ -1,5 +1,31 @@
 import 'package:flutter/material.dart';
 
+// Tipe persyaratan surat
+enum RequirementType {
+  auto, // Otomatis dari profil user (KTP/KK)
+  upload, // User perlu upload dokumen baru
+  text, // User perlu isi teks
+}
+
+/// Merepresentasikan satu item persyaratan dalam pengajuan surat
+class SuratRequirement {
+  final String id; // ID unik, e.g. "ktp_scan", "form_f201"
+  final String label; // Label singkat, e.g. "Scan KTP / E-KTP"
+  final String description; // Penjelasan lengkap
+  final RequirementType type;
+  final String? autoSourceField; // Field profil: "ktpUrl" | "kkUrl"
+  final String? hint; // Hint untuk input teks
+
+  const SuratRequirement({
+    required this.id,
+    required this.label,
+    required this.description,
+    required this.type,
+    this.autoSourceField,
+    this.hint,
+  });
+}
+
 class SuratFieldModel {
   final String label;
   final String hint;
@@ -19,7 +45,7 @@ class SuratModel {
   final String description;
   final int iconCodePoint;
   final String? iconFontFamily;
-  final List<String> requirements;
+  final List<SuratRequirement> requirements;
   final List<SuratFieldModel> fields;
   final String templateKonten;
 

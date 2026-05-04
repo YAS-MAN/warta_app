@@ -164,6 +164,33 @@ class AuthService {
     debugPrint('[AuthService] Selfie URL: $selfieUrl');
   }
 
+  /// Upload / ganti scan Kartu Keluarga (KK) user ke Cloudinary.
+  /// Simpan URL ke field 'kkUrl' di Firestore.
+  Future<UserModel> updateKkDoc(String uid, XFile kkFile) async {
+    debugPrint('[AuthService] Upload KK uid=$uid');
+
+    final kkUrl = await _cloudinary.uploadImageXFile(
+      kkFile,
+      folder: 'kk_docs',
+    );
+
+    if (kkUrl == null) {
+      throw Exception('Gagal mengupload KK. Periksa koneksi internet Anda.');
+    }
+
+    await _firestore.collection('users').doc(uid).update({
+      'kkUrl': kkUrl,
+    });
+
+    debugPrint('[AuthService] KK URL: $kkUrl');
+
+    final updatedUser = await getUserById(uid);
+    if (updatedUser == null) {
+      throw Exception('Gagal memuat ulang data pengguna.');
+    }
+    return updatedUser;
+  }
+
   /// Ganti foto profil user (setelah login).
   /// Upload ke Cloudinary folder 'profile_photos/' lalu update Firestore.
   /// Returns UserModel terbaru jika berhasil, throws Exception jika gagal.

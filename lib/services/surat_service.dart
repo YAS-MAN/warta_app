@@ -192,6 +192,31 @@ class SuratService {
     });
   }
 
+  /// Stream surat submissions yang menunggu persetujuan RW (status 'PROSES RW')
+  Stream<List<SuratSubmissionModel>> streamSubmissionsForRw({
+    required String kelurahan,
+    required String rw,
+  }) {
+    if (kelurahan.isEmpty || rw.isEmpty) {
+      return Stream.value([]);
+    }
+    return _suratSubmissions
+        .where('kelurahan', isEqualTo: kelurahan)
+        .where('rw', isEqualTo: rw)
+        .where('status', isEqualTo: 'PROSES RW')
+        .snapshots()
+        .map((snapshot) {
+      final list =
+          snapshot.docs.map(SuratSubmissionModel.fromFirestore).toList();
+      list.sort((a, b) {
+        final left = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final right = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return right.compareTo(left);
+      });
+      return list;
+    });
+  }
+
   Future<void> updateSubmissionStatus({
     required String submissionId,
     required String newStatus,
@@ -215,7 +240,6 @@ class SuratService {
     await _suratSubmissions.doc(submissionId).update(updateData);
 
     final userId = (data['userId'] ?? '').toString();
-    final jenisSurat = (data['jenisSurat'] ?? 'Pengajuan surat').toString();
     if (userId.isNotEmpty) {
       String subtitle = 'Pengajuan surat sedang diproses.';
       if (normalizedStatus == 'PROSES RW') {

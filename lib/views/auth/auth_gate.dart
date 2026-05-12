@@ -7,7 +7,7 @@ import '../main/main_view.dart';
 import '../dashboard/dashboard_super_admin_view.dart';
 import '../dashboard/dashboard_lurah_view.dart';
 import '../rt/rt_main_view.dart';
-import '../dashboard/dashboard_rw_view.dart';
+import '../rw/rw_main_view.dart';
 
 /// AuthGate: mendengarkan Firebase Auth state changes.
 /// Secara otomatis mengarahkan user ke tampilan yang benar berdasarkan role.
@@ -75,7 +75,7 @@ class _RoleRouterState extends State<_RoleRouter> {
           case 'rt':
             return const RtMainView();
           case 'rw':
-            return const DashboardRwView();
+            return const RwMainView();
           default: // 'warga'
             return const MainView();
         }

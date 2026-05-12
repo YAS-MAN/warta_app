@@ -13,7 +13,7 @@ class RwReportInboxView extends StatefulWidget {
 
 class _RwReportInboxViewState extends State<RwReportInboxView> {
   final ReportService _reportService = ReportService();
-  static const Color primary = Color(0xFF6A1B9A);
+  static const Color primary = Color(0xFF8B0000);
 
   @override
   Widget build(BuildContext context) {

@@ -25,6 +25,7 @@ class UserModel {
   final String? kabupaten;
   final String? nomorTelepon;
   final String? rtSignatureUrl;
+  final String? rwSignatureUrl;
   final String? kkUrl;
   final DateTime? createdAt;
 
@@ -53,6 +54,7 @@ class UserModel {
     this.kabupaten,
     this.nomorTelepon,
     this.rtSignatureUrl,
+    this.rwSignatureUrl,
     this.kkUrl,
     this.createdAt,
   });
@@ -84,6 +86,7 @@ class UserModel {
       kabupaten: data['kabupaten'],
       nomorTelepon: data['nomor_telepon'],
       rtSignatureUrl: data['rtSignatureUrl'],
+      rwSignatureUrl: data['rwSignatureUrl'],
       kkUrl: data['kkUrl'],
       createdAt: data['createdAt'] is Timestamp
           ? (data['createdAt'] as Timestamp).toDate()
@@ -118,6 +121,7 @@ class UserModel {
       if (kabupaten != null) 'kabupaten': kabupaten,
       if (nomorTelepon != null) 'nomor_telepon': nomorTelepon,
       if (rtSignatureUrl != null) 'rtSignatureUrl': rtSignatureUrl,
+      if (rwSignatureUrl != null) 'rwSignatureUrl': rwSignatureUrl,
       if (kkUrl != null) 'kkUrl': kkUrl,
       if (createdAt != null) 'createdAt': createdAt,
     };

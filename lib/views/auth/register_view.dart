@@ -26,10 +26,10 @@ class _RegisterViewState extends State<RegisterView> {
   final MediaService _mediaService = MediaService();
   final OcrService _ocrService = OcrService();
 
-  File? _ktpImage;
+  XFile? _ktpImage;
   bool _isProcessing = false;
   Map<String, String> _parsedData = {};
-  String? _ocrRawText; // raw text from ML Kit, used to show quality hints
+
   // Tombol aktif hanya kalau NIK dan Nama minimal berhasil terbaca
   bool get _isKtpReady =>
       _ktpImage != null &&
@@ -134,12 +134,8 @@ class _RegisterViewState extends State<RegisterView> {
 
     if (xfile == null || !mounted) return;
 
-    // Untuk display, tetap pakai File (Image.file)
-    // Untuk OCR, pakai XFile yang bisa handle content URIs lewat saveTo()
-    final File displayFile = await _mediaService.getDisplayFile(xfile);
-
     setState(() {
-      _ktpImage = displayFile;
+      _ktpImage = xfile;
       _isProcessing = true;
       _parsedData.clear();
     });
@@ -160,7 +156,6 @@ class _RegisterViewState extends State<RegisterView> {
     setState(() {
       _isProcessing = false;
       _parsedData = data;
-      _ocrRawText = ocrText; // simpan raw text (termasuk pesan error)
     });
   }
 
@@ -176,207 +171,7 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
-  /// Menampilkan hasil scan KTP field-by-field dengan tips perbaikan
-  Widget _buildOcrResultPanel() {
-    // Daftar field penting beserta label UX yang ramah
-    final List<Map<String, String>> fields = [
-      {'key': 'nik', 'label': 'NIK (16 digit)'},
-      {'key': 'nama', 'label': 'Nama'},
-      {'key': 'tempat_lahir', 'label': 'Tempat Lahir'},
-      {'key': 'tanggal_lahir', 'label': 'Tanggal Lahir'},
-      {'key': 'jenis_kelamin', 'label': 'Jenis Kelamin'},
-      {'key': 'gol_darah', 'label': 'Golongan Darah'},
-      {'key': 'alamat', 'label': 'Alamat'},
-      {'key': 'rt', 'label': 'RT/RW'},
-      {'key': 'kelurahan', 'label': 'Kel/Desa'},
-      {'key': 'kecamatan', 'label': 'Kecamatan'},
-      {'key': 'agama', 'label': 'Agama'},
-      {'key': 'status_perkawinan', 'label': 'Status Perkawinan'},
-      {'key': 'pekerjaan', 'label': 'Pekerjaan'},
-      {'key': 'kewarganegaraan', 'label': 'Kewarganegaraan'},
-    ];
 
-    final int total = fields.length;
-    final int found = fields
-        .where((f) => _parsedData[f['key']]?.isNotEmpty == true)
-        .length;
-    final bool ocrFailed = _ocrRawText == null || _ocrRawText!.trim().isEmpty;
-    final bool ocrError = _ocrRawText?.startsWith('__ERROR__:') == true;
-    final bool hasCore =
-        _parsedData['nik']?.isNotEmpty == true ||
-        _parsedData['nama']?.isNotEmpty == true;
-
-    // Tips kontekstual berdasarkan kondisi
-    List<String> tips = [];
-    if (ocrError) {
-      tips.add('⚠️ OCR melempar exception — lihat detail error di bawah.');
-      tips.add(
-        'Kemungkinan penyebab: izin kamera/storage, format gambar tidak didukung, atau bug ML Kit.',
-      );
-      tips.add('Coba restart aplikasi lalu ambil foto ulang.');
-    } else if (ocrFailed) {
-      tips.add('📷 OCR tidak berhasil membaca teks sama sekali.');
-      tips.add('Pastikan foto tidak buram atau terlalu gelap.');
-      tips.add('Coba ambil foto lebih dekat dan pastikan pencahayaan cukup.');
-    } else if (!hasCore) {
-      tips.add('⚠️ NIK dan Nama tidak terbaca. Ini field wajib.');
-      if ((_ocrRawText?.length ?? 0) < 50) {
-        tips.add('Teks OCR sangat pendek — gambar kemungkinan terpotong.');
-      } else {
-        tips.add(
-          'Teks OCR ada tapi regex tidak cocok — gambar mungkin buram atau miring.',
-        );
-      }
-    } else if (found < total ~/ 2) {
-      tips.add(
-        'Sebagian field tidak terbaca. Coba perbaiki pencahayaan atau kurangi glare/silau.',
-      );
-    }
-
-    Color statusColor = hasCore ? Colors.green.shade700 : Colors.red.shade600;
-    Color statusBg = hasCore ? Colors.green.shade50 : Colors.red.shade50;
-    IconData statusIcon = hasCore
-        ? Icons.check_circle_rounded
-        : Icons.error_rounded;
-    String statusTitle = hasCore
-        ? 'Scan Berhasil — $found/$total field terbaca'
-        : 'Scan Gagal — Field utama tidak terdeteksi';
-
-    return Container(
-      decoration: BoxDecoration(
-        color: statusBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header status
-          Row(
-            children: [
-              Icon(statusIcon, color: statusColor, size: 22),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  statusTitle,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: statusColor,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Grid field checklist
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: fields.map((f) {
-              final bool ok = _parsedData[f['key']]?.isNotEmpty == true;
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: ok ? Colors.green.shade100 : Colors.red.shade100,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      ok ? Icons.check : Icons.close,
-                      size: 12,
-                      color: ok ? Colors.green.shade800 : Colors.red.shade800,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      f['label']!,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: ok ? Colors.green.shade900 : Colors.red.shade900,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-
-          // Tips jika ada
-          if (tips.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 10),
-            Text(
-              'Saran Perbaikan:',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.orange.shade800,
-              ),
-            ),
-            const SizedBox(height: 6),
-            ...tips.map(
-              (tip) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  '• $tip',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.orange.shade900,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ),
-          ],
-
-          // Raw OCR text — selalu tampilkan agar user bisa verifikasi
-          if (_ocrRawText != null) ...[
-            const SizedBox(height: 10),
-            ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              childrenPadding: EdgeInsets.zero,
-              iconColor: Colors.grey,
-              title: Text(
-                ocrError
-                    ? '🔴 Lihat pesan error OCR'
-                    : (ocrFailed
-                          ? '⚠️ Teks OCR kosong'
-                          : '🔎 Lihat teks OCR mentah (${_ocrRawText!.length} karakter)'),
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-              ),
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: SelectableText(
-                    _ocrRawText!.trim().isEmpty
-                        ? '(tidak ada teks yang terbaca oleh ML Kit)'
-                        : (_ocrRawText!.trim().length > 600
-                              ? '${_ocrRawText!.trim().substring(0, 600)}...'
-                              : _ocrRawText!.trim()),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontFamily: 'monospace',
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 
   /// Parse KTP fields from raw OCR text using a multi-pass strategy:
   /// 1. Positional Parser: Anchored on NIK, reads values at fixed offsets.
@@ -632,8 +427,9 @@ class _RegisterViewState extends State<RegisterView> {
         r'\b(ISLAM|KRISTEN|KATHOLIK|HINDU|BUDHA|KONGHUCU)\b',
         caseSensitive: false,
       ).firstMatch(rawText.replaceAll('1SLAM', 'ISLAM'));
-      if (religionMatch != null)
+      if (religionMatch != null) {
         data['agama'] = religionMatch.group(1)!.toUpperCase();
+      }
     }
 
     // Status Perkawinan
@@ -683,8 +479,9 @@ class _RegisterViewState extends State<RegisterView> {
       r'PROVINSI\s+([A-Z\s]+)',
       caseSensitive: false,
     ).firstMatch(rawText);
-    if (provMatch != null)
+    if (provMatch != null) {
       acceptIf('provinsi', provMatch.group(1)!.split('\n')[0].trim());
+    }
 
     for (int i = 0; i < lines.length; i++) {
       if (RegExp(r'PROVINSI', caseSensitive: false).hasMatch(lines[i]) &&
@@ -899,7 +696,7 @@ class _RegisterViewState extends State<RegisterView> {
                                             fit: BoxFit.cover,
                                           )
                                         : Image.file(
-                                            _ktpImage!,
+                                            File(_ktpImage!.path),
                                             fit: BoxFit.cover,
                                           ),
                                     if (_isProcessing)
@@ -974,11 +771,51 @@ class _RegisterViewState extends State<RegisterView> {
               ),
             ),
 
-            // 3b. PANEL HASIL OCR (muncul setelah foto diambil)
+            // 3b. STATUS SINGKAT (muncul setelah foto diambil)
             if (_ktpImage != null && !_isProcessing)
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                child: _buildOcrResultPanel(),
+                child: _isKtpReady
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.green.shade300),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.green.shade700, size: 22),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                "Data KTP berhasil terbaca. Tekan 'Selanjutnya' untuk melanjutkan.",
+                                style: TextStyle(color: Colors.green.shade800, fontSize: 13, fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFFCA5A5)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 22),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                "Gagal membaca KTP. Coba foto ulang atau gunakan 'Input Data Manual' di bawah.",
+                                style: TextStyle(color: Color(0xFF991B1B), fontSize: 13, fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
               ),
 
             const SizedBox(height: 24),
@@ -1028,17 +865,17 @@ class _RegisterViewState extends State<RegisterView> {
             ),
             const SizedBox(height: 12),
 
-            // 🐛 DEBUG: Tombol skip scan KTP (hapus sebelum release)
+            // Tombol Input Manual — untuk user yang OCR gagal terus
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
                 width: double.infinity,
-                height: 44,
+                height: 48,
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.orange, width: 1.5),
+                    side: const BorderSide(color: Color(0xFF64748B), width: 1.5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   onPressed: () {
@@ -1052,13 +889,13 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.bug_report_outlined, color: Colors.orange, size: 18),
+                  icon: const Icon(Icons.edit_note, color: Color(0xFF64748B), size: 20),
                   label: const Text(
-                    "SKIP SCAN KTP (DEBUG)",
+                    "INPUT DATA MANUAL",
                     style: TextStyle(
-                      color: Colors.orange,
+                      color: Color(0xFF64748B),
                       fontWeight: FontWeight.w600,
-                      fontSize: 13,
+                      fontSize: 14,
                     ),
                   ),
                 ),

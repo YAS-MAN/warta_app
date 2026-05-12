@@ -3,9 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/media_service.dart';
 import '../../viewmodels/auth_viewmodel.dart';
-import 'login_view.dart';
+import 'email_verify_view.dart';
 
 class PhotoVerifView extends StatefulWidget {
   /// uid dari proses registerStep1. Null jika view dibuka tanpa konteks registrasi.
@@ -26,10 +27,10 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
   static const Color iconBgLight = Color(0xFFFEE2E2);
 
   final MediaService _mediaService = MediaService();
-  File? _selfieImage;
+  XFile? _selfieImage;
 
   Future<void> _ambilSelfie() async {
-    final image = await _mediaService.pickImageFromCamera();
+    final image = await _mediaService.pickImageXFileFromCamera();
     if (image != null && mounted) {
       setState(() => _selfieImage = image);
     }
@@ -52,22 +53,12 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
     if (!mounted) return;
 
     if (success) {
-      // Registrasi selesai — balik ke login dengan pesan sukses
-      Navigator.pushAndRemoveUntil(
+      // Lanjut ke verifikasi email
+      if (!mounted) return;
+      final email = authVM.currentUser?.email ?? '';
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginView()),
-        (route) => false,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            '🎉 Pendaftaran berhasil! Silakan login dengan akun Anda.',
-          ),
-          backgroundColor: const Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+        MaterialPageRoute(builder: (_) => EmailVerifyView(email: email)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -263,7 +254,7 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
                                               fit: BoxFit.cover,
                                             )
                                           : Image.file(
-                                              _selfieImage!,
+                                              File(_selfieImage!.path),
                                               fit: BoxFit.cover,
                                             ),
                                       Positioned(
@@ -414,76 +405,7 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
                           ),
                         ),
 
-                      const SizedBox(height: 12),
 
-                      // 🐛 DEBUG: Skip selfie (hapus sebelum release)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 44,
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.orange, width: 1.5),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: authVM.isLoading
-                              ? null
-                              : () async {
-                                  final success =
-                                      await authVM.registerStep2Skip();
-                                  if (!mounted) return;
-                                  if (success) {
-                                    Navigator.pushAndRemoveUntil(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const LoginView(),
-                                      ),
-                                      (route) => false,
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          '🎉 Pendaftaran berhasil! Silakan login.',
-                                        ),
-                                        backgroundColor:
-                                            const Color(0xFF10B981),
-                                        behavior: SnackBarBehavior.floating,
-                                        duration: const Duration(seconds: 4),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          authVM.errorMessage ??
-                                              'Gagal finalisasi.',
-                                        ),
-                                        backgroundColor:
-                                            const Color(0xFF8B0000),
-                                      ),
-                                    );
-                                  }
-                                },
-                          icon: const Icon(
-                            Icons.bug_report_outlined,
-                            color: Colors.orange,
-                            size: 18,
-                          ),
-                          label: const Text(
-                            "SKIP SELFIE (DEBUG)",
-                            style: TextStyle(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),

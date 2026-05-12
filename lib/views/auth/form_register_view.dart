@@ -1,13 +1,16 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../services/media_service.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'photo_verif_view.dart';
 
 class FormRegistView extends StatefulWidget {
   final Map<String, String> prefilledData;
-  final File? ktpImageFile; // foto KTP dari halaman scan
+  final XFile? ktpImageFile; // foto KTP dari halaman scan
   const FormRegistView({
     super.key,
     this.prefilledData = const {},
@@ -28,6 +31,8 @@ class _FormRegistViewState extends State<FormRegistView> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  XFile? _ktpImageFile; // mutable — bisa diubah oleh user manual
+  final MediaService _mediaService = MediaService();
 
   // Text Controllers
   late final TextEditingController _nikCtrl;
@@ -86,6 +91,8 @@ class _FormRegistViewState extends State<FormRegistView> {
     const allowedSP = ['BELUM KAWIN', 'KAWIN', 'CERAI HIDUP', 'CERAI MATI'];
     final spRaw = (d['status_perkawinan'] ?? '').toUpperCase().trim();
     _statusPerkawinan = allowedSP.contains(spRaw) ? spRaw : '-';
+
+    _ktpImageFile = widget.ktpImageFile;
   }
 
   @override
@@ -136,6 +143,58 @@ class _FormRegistViewState extends State<FormRegistView> {
       final mm = picked.month.toString().padLeft(2, '0');
       final yy = picked.year.toString();
       setState(() => _tglLahirCtrl.text = '$dd-$mm-$yy');
+    }
+  }
+
+  /// Pilih foto KTP dari kamera/galeri — untuk user yang input manual
+  Future<void> _pickKtpImage() async {
+    final source = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 20),
+            const Text("Pilih Sumber Foto KTP", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context, 'camera'),
+                  child: Column(children: [
+                    Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.camera_alt, color: primaryRed, size: 32)),
+                    const SizedBox(height: 8),
+                    const Text("Kamera", style: TextStyle(fontWeight: FontWeight.w600)),
+                  ]),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context, 'gallery'),
+                  child: Column(children: [
+                    Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: const Color(0xFFEFF6FF), borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.photo_library, color: Color(0xFF3B82F6), size: 32)),
+                    const SizedBox(height: 8),
+                    const Text("Galeri", style: TextStyle(fontWeight: FontWeight.w600)),
+                  ]),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+    final XFile? image = source == 'camera'
+        ? await _mediaService.pickImageXFileFromCamera()
+        : await _mediaService.pickImageXFileFromGallery();
+    if (image != null && mounted) {
+      setState(() => _ktpImageFile = image);
     }
   }
 
@@ -260,71 +319,100 @@ class _FormRegistViewState extends State<FormRegistView> {
                 // 2. KOTAK PLACEHOLDER FOTO KTP (Tumpang tindih dengan background merah)
                 Padding(
                   padding: const EdgeInsets.only(top: 110, left: 24, right: 24),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: DottedBorder(
-                      color: borderColor,
-                      strokeWidth: 2,
-                      dashPattern: const [6, 4],
-                      borderType: BorderType.RRect,
-                      radius: const Radius.circular(12),
-                      child: Container(
-                        width: double.infinity,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        // Tampilkan foto KTP asli jika tersedia, placeholder jika tidak
-                        child: widget.ktpImageFile != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.file(
-                                  widget.ktpImageFile!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
+                  child: GestureDetector(
+                    onTap: _ktpImageFile == null ? _pickKtpImage : null,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: DottedBorder(
+                        color: borderColor,
+                        strokeWidth: 2,
+                        dashPattern: const [6, 4],
+                        borderType: BorderType.RRect,
+                        radius: const Radius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          height: 140,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          // Tampilkan foto KTP asli jika tersedia, placeholder tappable jika tidak
+                          child: _ktpImageFile != null
+                              ? Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: kIsWeb
+                                          ? Image.network(
+                                              _ktpImageFile!.path,
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              height: 140,
+                                            )
+                                          : Image.file(
+                                              File(_ktpImageFile!.path),
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              height: 140,
+                                            ),
+                                    ),
+                                    Positioned(
+                                      top: 6, right: 6,
+                                      child: GestureDetector(
+                                        onTap: _pickKtpImage,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.5),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.refresh, color: Colors.white, size: 18),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: primaryRed.withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.add_a_photo_outlined,
+                                        color: primaryRed,
+                                        size: 30,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                      "Ketuk untuk Upload Foto KTP",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: textDark,
+                                      ),
+                                    ),
+                                    const Text(
+                                      "Ambil foto KTP dari kamera atau galeri",
+                                      style: TextStyle(fontSize: 10, color: labelGray),
+                                    ),
+                                  ],
                                 ),
-                              )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: primaryRed.withValues(alpha: 0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.credit_card,
-                                      color: primaryRed,
-                                      size: 30,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  const Text(
-                                    "Foto KTP",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: textDark,
-                                    ),
-                                  ),
-                                  const Text(
-                                    "Scan KTP terlebih dahulu",
-                                    style: TextStyle(fontSize: 10, color: labelGray),
-                                  ),
-                                ],
-                              ),
+                        ),
                       ),
                     ),
                   ),
@@ -676,7 +764,7 @@ class _FormRegistViewState extends State<FormRegistView> {
       email: _emailCtrl.text.trim(),
       password: _passwordCtrl.text,
       ktpData: ktpData,
-      ktpImageFile: widget.ktpImageFile,
+      ktpImageFile: _ktpImageFile,
     );
 
     if (!mounted) return;
@@ -800,7 +888,7 @@ class _FormRegistViewState extends State<FormRegistView> {
     ValueChanged<String?> onChanged,
   ) {
     return DropdownButtonFormField<String>(
-      value: options.contains(value) ? value : options.first,
+      initialValue: options.contains(value) ? value : options.first,
       icon: const Icon(Icons.keyboard_arrow_down, color: labelGray),
       style: const TextStyle(color: textDark, fontSize: 14),
       decoration: InputDecoration(

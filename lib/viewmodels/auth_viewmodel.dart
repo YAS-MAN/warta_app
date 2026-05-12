@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/user_model.dart';
@@ -173,7 +172,7 @@ class AuthViewModel extends ChangeNotifier {
     required String email,
     required String password,
     required Map<String, String> ktpData,
-    File? ktpImageFile,
+    XFile? ktpImageFile,
   }) async {
     _setLoading(true);
     _clearError();
@@ -197,12 +196,12 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // ================================================================
-  // REGISTER — STEP 2: Upload selfie
+  // REGISTER — STEP 2: Upload selfie + kirim email verifikasi
   // ================================================================
 
-  /// Upload selfie ke Cloudinary dan update Firestore.
+  /// Upload selfie ke Cloudinary, update Firestore, lalu kirim email verifikasi.
   /// Returns true jika berhasil.
-  Future<bool> registerStep2(File selfieFile) async {
+  Future<bool> registerStep2(XFile selfieFile) async {
     if (_pendingUid == null) {
       _errorMessage = 'Sesi registrasi tidak valid. Mulai ulang dari awal.';
       notifyListeners();
@@ -212,9 +211,8 @@ class AuthViewModel extends ChangeNotifier {
     _clearError();
     try {
       await _authService.uploadSelfieAndFinish(_pendingUid!, selfieFile);
-      // Langsung logout agar user perlu login manual (keamanan)
-      await _authService.signOut();
-      _clearPendingData();
+      // Kirim email verifikasi
+      await _authService.sendVerificationEmail();
       notifyListeners();
       return true;
     } catch (e) {
@@ -226,19 +224,16 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// 🐛 DEBUG ONLY: Skip selfie upload, langsung finalize registrasi.
-  Future<bool> registerStep2Skip() async {
-    if (_pendingUid == null) {
-      _errorMessage = 'Sesi registrasi tidak valid. Mulai ulang dari awal.';
-      notifyListeners();
-      return false;
-    }
+  // ================================================================
+  // EMAIL VERIFICATION
+  // ================================================================
+
+  /// Kirim ulang email verifikasi
+  Future<bool> sendVerificationEmail() async {
     _setLoading(true);
     _clearError();
     try {
-      await _authService.signOut();
-      _clearPendingData();
-      notifyListeners();
+      await _authService.sendVerificationEmail();
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
@@ -247,6 +242,23 @@ class AuthViewModel extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  /// Cek apakah email sudah diverifikasi
+  Future<bool> checkEmailVerified() async {
+    try {
+      return await _authService.isEmailVerified();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Finalisasi registrasi: logout setelah email verified
+  Future<void> finalizeRegistration() async {
+    await _authService.signOut();
+    _clearPendingData();
+    _currentUser = null;
+    notifyListeners();
   }
 
   // ================================================================

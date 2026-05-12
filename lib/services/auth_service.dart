@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -89,7 +88,7 @@ class AuthService {
     required String email,
     required String password,
     required Map<String, String> ktpData,
-    File? ktpImageFile,
+    XFile? ktpImageFile,
   }) async {
     try {
       // 1. Buat akun Firebase Auth
@@ -102,7 +101,7 @@ class AuthService {
       // 2. Upload foto KTP ke Cloudinary (jika ada)
       String? ktpUrl;
       if (ktpImageFile != null) {
-        ktpUrl = await _cloudinary.uploadImage(
+        ktpUrl = await _cloudinary.uploadImageXFile(
           ktpImageFile,
           folder: 'ktp_photos',
         );
@@ -147,8 +146,8 @@ class AuthService {
   }
 
   /// Upload selfie ke Cloudinary dan update field selfieUrl di Firestore.
-  Future<void> uploadSelfieAndFinish(String uid, File selfieFile) async {
-    final selfieUrl = await _cloudinary.uploadImage(
+  Future<void> uploadSelfieAndFinish(String uid, XFile selfieFile) async {
+    final selfieUrl = await _cloudinary.uploadImageXFile(
       selfieFile,
       folder: 'selfies',
     );
@@ -246,6 +245,26 @@ class AuthService {
       throw Exception('Gagal memuat ulang data pengguna.');
     }
     return updatedUser;
+  }
+
+  // ================================================================
+  // EMAIL VERIFICATION
+  // ================================================================
+
+  /// Kirim email verifikasi ke user yang sedang login
+  Future<void> sendVerificationEmail() async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Tidak ada user aktif.');
+    if (user.emailVerified) return; // sudah verified
+    await user.sendEmailVerification();
+  }
+
+  /// Cek apakah email sudah diverifikasi. Reload dulu agar data fresh.
+  Future<bool> isEmailVerified() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    await user.reload();
+    return _auth.currentUser?.emailVerified ?? false;
   }
 
   // ================================================================

@@ -47,7 +47,10 @@ class MediaService {
   }
 
   /// Converts XFile to a real temp File path. For display with Image.file().
+  /// On Web, this just returns a File with the original path (though dart:io File isn't used for display on Web).
   Future<File> getDisplayFile(XFile xfile) async {
+    if (kIsWeb) return File(xfile.path);
+    
     try {
       final tempDir = await getTemporaryDirectory();
       final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();

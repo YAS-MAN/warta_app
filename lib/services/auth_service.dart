@@ -191,6 +191,33 @@ class AuthService {
     return updatedUser;
   }
 
+  /// Upload / ganti scan KTP user ke Cloudinary.
+  /// Simpan URL ke field 'ktpUrl' di Firestore.
+  Future<UserModel> updateKtpDoc(String uid, XFile ktpFile) async {
+    debugPrint('[AuthService] Upload KTP uid=$uid');
+
+    final ktpUrl = await _cloudinary.uploadImageXFile(
+      ktpFile,
+      folder: 'ktp_docs',
+    );
+
+    if (ktpUrl == null) {
+      throw Exception('Gagal mengupload KTP. Periksa koneksi internet Anda.');
+    }
+
+    await _firestore.collection('users').doc(uid).update({
+      'ktpUrl': ktpUrl,
+    });
+
+    debugPrint('[AuthService] KTP URL: $ktpUrl');
+
+    final updatedUser = await getUserById(uid);
+    if (updatedUser == null) {
+      throw Exception('Gagal memuat ulang data pengguna.');
+    }
+    return updatedUser;
+  }
+
   /// Ganti foto profil user (setelah login).
   /// Upload ke Cloudinary folder 'profile_photos/' lalu update Firestore.
   /// Returns UserModel terbaru jika berhasil, throws Exception jika gagal.

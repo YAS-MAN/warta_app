@@ -10,8 +10,11 @@ class SuratSubmissionModel {
   final String rt;
   final String rw;
   final String kelurahan;
+  final String? customBody;
+  final String? rejectionReason;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? actedByUid;
 
   const SuratSubmissionModel({
     required this.id,
@@ -23,8 +26,11 @@ class SuratSubmissionModel {
     required this.rt,
     required this.rw,
     required this.kelurahan,
+    this.customBody,
+    this.rejectionReason,
     this.createdAt,
     this.updatedAt,
+    this.actedByUid,
   });
 
   factory SuratSubmissionModel.fromFirestore(
@@ -41,8 +47,12 @@ class SuratSubmissionModel {
       rt: (data['rt'] ?? '').toString(),
       rw: (data['rw'] ?? '').toString(),
       kelurahan: (data['kelurahan'] ?? '').toString(),
+      customBody: data['customBody'] as String?,
+      rejectionReason: data['rejectionReason'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      actedByUid: data['actedByUid'] as String?,
     );
   }
 }
+

@@ -19,6 +19,7 @@ class _SuratViewState extends State<SuratView> {
   // State Filter
   bool _isFilterOpen = false;
   String _selectedFilter = "Semua Kategori";
+  String _searchQuery = "";
 
   static const Color bgApp = Color(0xFFF8FAFC);
   static const Color textDark = Color(0xFF111827);
@@ -174,11 +175,15 @@ class _SuratViewState extends State<SuratView> {
                               ],
                             ),
                             child: TextField(
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value;
+                                });
+                              },
                               onSubmitted: (value) {
-                                TopNotification.show(
-                                  context: context,
-                                  message: "Mencari surat: $value",
-                                );
+                                setState(() {
+                                  _searchQuery = value;
+                                });
                               },
                               decoration: InputDecoration(
                                 hintText: _selectedFilter == "Semua Kategori"
@@ -325,114 +330,118 @@ class _SuratViewState extends State<SuratView> {
                     ), // Hilang saat tertutup
             ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Kategori Surat",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: textDark,
+            if (_selectedFilter != "Semua Kategori" || _searchQuery.trim().isNotEmpty)
+              _buildFilteredResults()
+            else ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Kategori Surat",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textDark,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // Baris 1
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () =>
-                              _navigateToCategory(context, "Administrasi"),
-                          child: _buildCategoryCard(
-                            Icons.description,
-                            const Color(0xFF2563EB),
-                            const Color(0xFFEFF6FF),
-                            "Administrasi",
-                            "KK, KTP, Akta",
+                    // Baris 1
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () =>
+                                _navigateToCategory(context, "Administrasi"),
+                            child: _buildCategoryCard(
+                              Icons.description,
+                              const Color(0xFF2563EB),
+                              const Color(0xFFEFF6FF),
+                              "Administrasi",
+                              "KK, KTP, Akta",
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () =>
-                              _navigateToCategory(context, "Perizinan"),
-                          child: _buildCategoryCard(
-                            Icons.domain,
-                            const Color(0xFFEA580C),
-                            const Color(0xFFFFF7ED),
-                            "Perizinan",
-                            "Usaha, Bangunan",
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () =>
+                                _navigateToCategory(context, "Perizinan"),
+                            child: _buildCategoryCard(
+                              Icons.domain,
+                              const Color(0xFFEA580C),
+                              const Color(0xFFFFF7ED),
+                              "Perizinan",
+                              "Usaha, Bangunan",
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Baris 2
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () =>
-                              _navigateToCategory(context, "Keterangan"),
-                          child: _buildCategoryCard(
-                            Icons.volunteer_activism,
-                            const Color(0xFF9333EA),
-                            const Color(0xFFFAF5FF),
-                            "Keterangan",
-                            "Suket, Domisili",
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () => _navigateToCategory(context, "Hukum"),
-                          child: _buildCategoryCard(
-                            Icons.gavel,
-                            const Color(0xFF16A34A),
-                            const Color(0xFFF0FDF4),
-                            "Hukum",
-                            "Ahli Waris, Tanah",
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // ==========================================
-            // 3. PALING SERING DIAKSES (List View)
-            // ==========================================
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Paling Sering Diakses",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: textDark,
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPopularItems(),
-                ],
+                    const SizedBox(height: 16),
+
+                    // Baris 2
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () =>
+                                _navigateToCategory(context, "Keterangan"),
+                            child: _buildCategoryCard(
+                              Icons.volunteer_activism,
+                              const Color(0xFF9333EA),
+                              const Color(0xFFFAF5FF),
+                              "Keterangan",
+                              "Suket, Domisili",
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () => _navigateToCategory(context, "Hukum"),
+                            child: _buildCategoryCard(
+                              Icons.gavel,
+                              const Color(0xFF16A34A),
+                              const Color(0xFFF0FDF4),
+                              "Hukum",
+                              "Ahli Waris, Tanah",
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 32),
+
+              const SizedBox(height: 32),
+
+              // ==========================================
+              // 3. PALING SERING DIAKSES (List View)
+              // ==========================================
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Paling Sering Diakses",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textDark,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildPopularItems(),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
           ],
         ),
       ),
@@ -638,6 +647,70 @@ class _SuratViewState extends State<SuratView> {
           const Icon(Icons.chevron_right, color: Color(0xFFD1D5DB)),
         ],
       ),
+    );
+  }
+
+  Widget _buildFilteredResults() {
+    return FutureBuilder<List<SuratModel>>(
+      future: SuratService().getFilteredSurat(
+        category: _selectedFilter,
+        query: _searchQuery,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(40.0),
+              child: CircularProgressIndicator(color: Color(0xFF8B0000)),
+            ),
+          );
+        }
+        final list = snapshot.data ?? [];
+        if (list.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40.0),
+              child: Column(
+                children: const [
+                  Icon(Icons.search_off, size: 48, color: Color(0xFF9CA3AF)),
+                  SizedBox(height: 12),
+                  Text(
+                    "Tidak ada surat yang cocok dengan pencarian Anda.",
+                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Hasil Pencarian (${list.length})",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: textDark,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...list.map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: InkWell(
+                    onTap: () => _showSuratDialog(context, item.title),
+                    child: _buildPopularItem(item.icon, item.title, item.category),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 }

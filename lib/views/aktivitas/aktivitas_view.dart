@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../utils/top_notification.dart';
 import 'aktivitas_detail_view.dart';
 import '../../models/aktivitas_model.dart';
+import '../../models/user_model.dart';
 import '../../services/aktivitas_service.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 
@@ -178,7 +181,7 @@ class _AktivitasViewState extends State<AktivitasView> {
                   List<AktivitasModel> filteredItems = allItems.where((item) {
                     if (_activeTabIndex == 0) return true; // Semua
                     if (_activeTabIndex == 1) return item.status == "PROSES"; // Menunggu
-                    if (_activeTabIndex == 2) return item.status == "BERHASIL" || item.status == "SELESAI"; // Selesai
+                    if (_activeTabIndex == 2) return item.status == "BERHASIL" || item.status == "SELESAI" || item.status == "DITOLAK"; // Selesai
                     return false;
                   }).toList();
 
@@ -195,21 +198,31 @@ class _AktivitasViewState extends State<AktivitasView> {
                   return Column(
                      crossAxisAlignment: CrossAxisAlignment.start,
                      children: filteredItems.map((item) {
-                       // Menentukan custom handler untuk "INGATKAN ADMIN" jika PROSES
-                       String actionText = item.status == "PROSES" ? "INGATKAN ADMIN" : "LIHAT DETAIL";
+                       final currentUser = authVM.currentUser;
+                       String roleLabel = 'RT';
+                       if (currentUser?.role == 'rt') {
+                         roleLabel = 'RW';
+                       } else if (currentUser?.role == 'rw') {
+                         roleLabel = 'LURAH';
+                       }
+
+                       String actionText = item.status == "PROSES" ? "INGATKAN $roleLabel" : "LIHAT DETAIL";
                        VoidCallback? actionCallback;
                        
                        if (item.status == "PROSES") {
                          actionCallback = () {
-                            TopNotification.show(
-                              context: context,
-                              message: "Pengingat berhasil dikirim ke Admin",
-                              isSuccess: true,
-                            );
+                           if (currentUser != null) {
+                             _triggerReminder(context, currentUser, item);
+                           } else {
+                             TopNotification.show(
+                               context: context,
+                               message: "Sesi pengguna tidak ditemukan.",
+                             );
+                           }
                          };
                        } else if (item.status == "DITOLAK") {
                          actionText = "AJUKAN ULANG";
-                         actionCallback = () => _showDetailDialog(context, item.title, item.subtitle, item.status, item.date);
+                         actionCallback = () => _showDetailDialog(context, item);
                        }
 
                        // Custom indikator khusus untuk "Permohonan SKCK" bisa ditambahkan jika nama title sesuai
@@ -233,7 +246,7 @@ class _AktivitasViewState extends State<AktivitasView> {
                            actionText: actionText,
                            actionColor: item.status == "DITOLAK" ? goldColor : primaryRed,
                            customContent: customContent,
-                           onTap: () => _showDetailDialog(context, item.title, item.subtitle, item.status, item.date),
+                           onTap: () => _showDetailDialog(context, item),
                            onActionTap: actionCallback,
                          ),
                        );
@@ -491,21 +504,106 @@ class _AktivitasViewState extends State<AktivitasView> {
 
   void _showDetailDialog(
     BuildContext context,
-    String title,
-    String subtitle,
-    String status,
-    String time,
+    AktivitasModel item,
   ) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => AktivitasDetailView(
-          title: title,
-          subtitle: subtitle,
-          status: status,
-          time: time,
+          title: item.title,
+          subtitle: item.subtitle,
+          status: item.status,
+          time: item.date,
+          referenceId: item.referenceId,
+          activityType: item.activityType,
         ),
       ),
     );
+  }
+
+  Future<void> _triggerReminder(BuildContext context, UserModel currentUser, AktivitasModel item) async {
+    String targetRole = 'rt';
+    String roleLabel = 'RT';
+    if (currentUser.role == 'rt') {
+      targetRole = 'rw';
+      roleLabel = 'RW';
+    } else if (currentUser.role == 'rw') {
+      targetRole = 'lurah';
+      roleLabel = 'Lurah';
+    }
+
+    TopNotification.show(
+      context: context,
+      message: "Mencari kontak pengurus $roleLabel...",
+    );
+
+    try {
+      Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: targetRole);
+
+      if (currentUser.kelurahan?.isNotEmpty == true) {
+        query = query.where('kelurahan', isEqualTo: currentUser.kelurahan);
+      }
+      if (targetRole == 'rt' && currentUser.rw?.isNotEmpty == true) {
+        query = query.where('rw', isEqualTo: currentUser.rw);
+      }
+      if (targetRole == 'rt' && currentUser.rt?.isNotEmpty == true) {
+        query = query.where('rt', isEqualTo: currentUser.rt);
+      }
+      if (targetRole == 'rw' && currentUser.rw?.isNotEmpty == true) {
+        query = query.where('rw', isEqualTo: currentUser.rw);
+      }
+
+      final snapshot = await query.limit(1).get();
+      if (snapshot.docs.isEmpty) {
+        if (!context.mounted) return;
+        TopNotification.show(
+          context: context,
+          message: "Data pengurus $roleLabel belum terdaftar di wilayah Anda.",
+        );
+        return;
+      }
+
+      final targetUserData = snapshot.docs.first.data();
+      final String? phone = targetUserData['nomorTelepon'] as String?;
+      if (phone == null || phone.trim().isEmpty) {
+        if (!context.mounted) return;
+        TopNotification.show(
+          context: context,
+          message: "Pengurus $roleLabel belum melengkapi nomor telepon.",
+        );
+        return;
+      }
+
+      // Normalisasi nomor telepon ke format internasional 62...
+      String normalizedPhone = phone.trim().replaceAll(RegExp(r'[^\d+]'), '');
+      if (normalizedPhone.startsWith('0')) {
+        normalizedPhone = '62${normalizedPhone.substring(1)}';
+      } else if (normalizedPhone.startsWith('+')) {
+        normalizedPhone = normalizedPhone.substring(1);
+      }
+
+      final messageText = "Halo $roleLabel, mohon bantuannya untuk memverifikasi pengajuan/laporan (${item.title}) saya atas nama ${currentUser.nama}. Terima kasih.";
+      final urlString = 'https://wa.me/$normalizedPhone?text=${Uri.encodeComponent(messageText)}';
+      final uri = Uri.parse(urlString);
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (!context.mounted) return;
+        TopNotification.show(
+          context: context,
+          message: "Gagal membuka WhatsApp. Nomor tujuan: $phone",
+          isSuccess: true,
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      TopNotification.show(
+        context: context,
+        message: "Terjadi kesalahan saat menghubungi pengurus.",
+      );
+    }
   }
 }

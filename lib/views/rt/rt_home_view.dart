@@ -7,7 +7,7 @@ import '../../services/darurat_service.dart';
 import '../darurat/darurat_rt_action_view.dart';
 
 class RtHomeView extends StatefulWidget {
-  final Function(int) onNavigate;
+  final Function(int, [int?]) onNavigate;
   const RtHomeView({super.key, required this.onNavigate});
 
   @override
@@ -216,14 +216,14 @@ class _RtHomeViewState extends State<RtHomeView> {
                           Colors.orange,
                           Colors.orange.withValues(alpha: 0.1),
                           "Surat",
-                          () => widget.onNavigate(2),
+                          () => widget.onNavigate(2, 1),
                         ),
                         _buildQuickAction(
                           Icons.report_problem_outlined,
                           Colors.red,
                           Colors.red.withValues(alpha: 0.1),
                           "Laporan",
-                          () => widget.onNavigate(2),
+                          () => widget.onNavigate(2, 2),
                         ),
                         _buildQuickAction(
                           Icons.payments_outlined,
@@ -385,7 +385,7 @@ class _RtHomeViewState extends State<RtHomeView> {
                       return InkWell(
                         onTap: () {
                           // Trigger pindah tab Approval
-                          widget.onNavigate(2);
+                          widget.onNavigate(2, index == 0 ? 1 : 2);
                         },
                         borderRadius: BorderRadius.circular(16),
                         child: Container(

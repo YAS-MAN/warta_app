@@ -34,20 +34,28 @@ class AktivitasService {
       'referenceId': referenceId,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
+      // Fallback client-side timestamp agar dokumen tidak hilang
+      // saat persistence off (serverTimestamp bisa null sebelum server merespon)
+      'createdAtMs': DateTime.now().millisecondsSinceEpoch,
     });
   }
 
   Stream<List<AktivitasModel>> streamUserActivities(String userId, {int? limit}) {
     if (userId.isEmpty) return Stream.value([]);
     Query<Map<String, dynamic>> query = _activities
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true);
-    if (limit != null) {
-      query = query.limit(limit);
-    }
+        .where('userId', isEqualTo: userId);
+    // Tidak pakai orderBy('createdAt') karena dengan persistenceEnabled: false,
+    // dokumen baru memiliki createdAt = null sebelum server merespon,
+    // menyebabkan dokumen hilang dari query ordering.
 
     return query.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => _fromDoc(doc)).toList();
+      final list = snapshot.docs.map((doc) => _fromDoc(doc)).toList();
+      // Sort client-side
+      list.sort((a, b) => b.sortTimestamp.compareTo(a.sortTimestamp));
+      if (limit != null && list.length > limit) {
+        return list.sublist(0, limit);
+      }
+      return list;
     });
   }
 
@@ -55,9 +63,10 @@ class AktivitasService {
     if (userId.isEmpty) return [];
     final snapshot = await _activities
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .get();
-    return snapshot.docs.map((doc) => _fromDoc(doc)).toList();
+    final list = snapshot.docs.map((doc) => _fromDoc(doc)).toList();
+    list.sort((a, b) => b.sortTimestamp.compareTo(a.sortTimestamp));
+    return list;
   }
 
   Future<List<AktivitasModel>> getRecentAktivitas(
@@ -67,10 +76,10 @@ class AktivitasService {
     if (userId.isEmpty) return [];
     final snapshot = await _activities
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
         .get();
-    return snapshot.docs.map((doc) => _fromDoc(doc)).toList();
+    final list = snapshot.docs.map((doc) => _fromDoc(doc)).toList();
+    list.sort((a, b) => b.sortTimestamp.compareTo(a.sortTimestamp));
+    return list.take(limit).toList();
   }
 
   AktivitasModel _fromDoc(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
@@ -80,19 +89,27 @@ class AktivitasService {
     final timestamp = (data['createdAt'] as Timestamp?)?.toDate();
     final style = _styleFor(type, status);
 
+    // Sorting: prefer server timestamp, fallback ke client-side createdAtMs
+    final int sortTs = timestamp?.millisecondsSinceEpoch ??
+        (data['createdAtMs'] as int?) ??
+        0;
+
     return AktivitasModel(
       userId: data['userId'] ?? '',
       id: doc.id,
       title: data['title'] ?? 'Aktivitas',
       subtitle: data['subtitle'] ?? '-',
-      date: _formatRelative(timestamp),
+      date: _formatRelative(timestamp ?? (sortTs > 0 ? DateTime.fromMillisecondsSinceEpoch(sortTs) : null)),
       status: status,
+      sortTimestamp: sortTs,
       iconCodePoint: style.icon.codePoint,
       iconFontFamily: style.icon.fontFamily,
       iconColor: style.iconColor,
       iconBgColor: style.iconBgColor,
       statusTextColor: style.statusTextColor,
       statusBgColor: style.statusBgColor,
+      referenceId: (data['referenceId'] ?? '').toString(),
+      activityType: type,
     );
   }
 
@@ -135,6 +152,33 @@ class AktivitasService {
       statusTextColor: type == 'surat' ? blueInfo : yellowProcess,
       statusBgColor: type == 'surat' ? bgInfo : bgProcess,
     );
+  }
+
+  /// Update aktivitas yang sudah ada berdasarkan referenceId dan userId
+  /// Ini mencegah duplikasi aktivitas saat status submission berubah
+  Future<void> updateActivityByReference({
+    required String userId,
+    required String referenceId,
+    required String newStatus,
+    required String newSubtitle,
+  }) async {
+    if (userId.isEmpty || referenceId.isEmpty) return;
+
+    final snapshot = await _activities
+        .where('userId', isEqualTo: userId)
+        .where('referenceId', isEqualTo: referenceId)
+        .get();
+
+    if (snapshot.docs.isEmpty) return;
+
+    // Update semua aktivitas yang cocok (biasanya hanya 1)
+    for (final doc in snapshot.docs) {
+      await _activities.doc(doc.id).update({
+        'status': newStatus,
+        'subtitle': newSubtitle,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
 }
 

@@ -15,33 +15,39 @@ class RtMainView extends StatefulWidget {
 
 class _RtMainViewState extends State<RtMainView> {
   late int _currentIndex;
-  late final List<Widget> _pages;
+  int _approvalSubIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
-    // Halaman-halaman tab RT
-    _pages = [
-      RtHomeView(onNavigate: (index) => _setPage(index)),
-      const RtManajemenView(),
-      const RtApprovalView(),
-      const RtProfilView(),
-    ];
   }
 
-  void _setPage(int index) {
+  void _setPage(int index, [int? subIndex]) {
     setState(() {
       _currentIndex = index;
+      if (index == 2 && subIndex != null) {
+        _approvalSubIndex = subIndex;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      RtHomeView(onNavigate: (index, [subIndex]) => _setPage(index, subIndex)),
+      const RtManajemenView(),
+      RtApprovalView(
+        key: ValueKey(_approvalSubIndex),
+        initialIndex: _approvalSubIndex,
+      ),
+      const RtProfilView(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _pages,
+        children: pages,
       ),
       // Tombol Scan Floating
       floatingActionButton: FloatingActionButton(

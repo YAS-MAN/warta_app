@@ -15,6 +15,7 @@ class SuratRequirement {
   final RequirementType type;
   final String? autoSourceField; // Field profil: "ktpUrl" | "kkUrl"
   final String? hint; // Hint untuk input teks
+  final bool isRequired; // true = wajib (merah), false = opsional (kuning)
 
   const SuratRequirement({
     required this.id,
@@ -23,6 +24,7 @@ class SuratRequirement {
     required this.type,
     this.autoSourceField,
     this.hint,
+    this.isRequired = true,
   });
 }
 
@@ -30,11 +32,13 @@ class SuratFieldModel {
   final String label;
   final String hint;
   final int maxLines;
+  final bool isCurrency; // true = format ribuan (Rp)
 
   SuratFieldModel({
     required this.label,
     required this.hint,
     this.maxLines = 1,
+    this.isCurrency = false,
   });
 }
 

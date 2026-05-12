@@ -233,6 +233,8 @@ class _ProfilDetailViewState extends State<ProfilDetailView> {
       case "Ubah PIN Keamanan":
       case "Kata Sandi":
         return _buildPasswordForm();
+      case "Kelola Dokumen":
+        return _buildManageDocuments();
       case "Pengaturan Akun":
       case "Notifikasi":
         return Column(
@@ -553,6 +555,221 @@ class _ProfilDetailViewState extends State<ProfilDetailView> {
           fontSize: 14,
         ),
       ),
+    );
+  }
+
+  Widget _buildManageDocuments() {
+    final authVM = context.watch<AuthViewModel>();
+    final user = authVM.currentUser;
+    if (user == null) return const SizedBox();
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // --- KTP ---
+              _buildDocItem(
+                title: "Kartu Tanda Penduduk (KTP)",
+                icon: Icons.badge,
+                url: user.ktpUrl,
+                onUpload: () async {
+                  final choice = await _showSourceSheet("KTP");
+                  if (choice != null) {
+                    await authVM.updateKtpDoc(fromCamera: choice == 'camera');
+                    if (mounted) _showResult(authVM);
+                  }
+                },
+              ),
+              const Divider(height: 48),
+              // --- KK ---
+              _buildDocItem(
+                title: "Kartu Keluarga (KK)",
+                icon: Icons.family_restroom,
+                url: user.kkUrl,
+                onUpload: () async {
+                  final choice = await _showSourceSheet("KK");
+                  if (choice != null) {
+                    await authVM.updateKkDoc(fromCamera: choice == 'camera');
+                    if (mounted) _showResult(authVM);
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDocItem({
+    required String title,
+    required IconData icon,
+    String? url,
+    required VoidCallback onUpload,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: primaryRed.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: primaryRed, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    url != null
+                        ? "Dokumen sudah terupload"
+                        : "Belum ada dokumen terunggah",
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: url != null ? Colors.green.shade600 : textGray,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (url != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "✓ Ada",
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                ),
+              ),
+          ],
+        ),
+        if (url != null) ...[
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              url,
+              height: 160,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              loadingBuilder: (_, child, progress) =>
+                  progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2, color: primaryRed)),
+              errorBuilder: (_, __, ___) => Container(
+                height: 160,
+                width: double.infinity,
+                color: Colors.grey.shade100,
+                child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: onUpload,
+            icon: Icon(url != null ? Icons.refresh : Icons.upload_file, size: 16, color: primaryRed),
+            label: Text(
+              url != null ? 'Ganti Dokumen' : 'Upload Dokumen',
+              style: const TextStyle(color: primaryRed, fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: primaryRed),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<String?> _showSourceSheet(String docType) async {
+    return await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 48, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
+            const SizedBox(height: 20),
+            Text('Upload $docType', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textDark)),
+            const SizedBox(height: 8),
+            Text('Pilih sumber foto $docType Anda', style: const TextStyle(color: textGray, fontSize: 13)),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(child: _buildPhotoSourceButton(icon: Icons.camera_alt_rounded, label: 'Kamera', onTap: () => Navigator.pop(ctx, 'camera'))),
+                const SizedBox(width: 16),
+                Expanded(child: _buildPhotoSourceButton(icon: Icons.photo_library_rounded, label: 'Galeri', onTap: () => Navigator.pop(ctx, 'gallery'))),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoSourceButton({required IconData icon, required String label, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF2F2),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: primaryRed.withOpacity(0.15)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: primaryRed, size: 32),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(color: primaryRed, fontWeight: FontWeight.w600, fontSize: 13)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showResult(AuthViewModel authVM) {
+    TopNotification.show(
+      context: context,
+      message: authVM.errorMessage ?? "Dokumen berhasil diperbarui",
+      isSuccess: authVM.errorMessage == null,
     );
   }
 }

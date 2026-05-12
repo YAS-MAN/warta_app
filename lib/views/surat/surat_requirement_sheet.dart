@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../models/surat_model.dart';
 import '../../services/cloudinary_service.dart';
 
 /// Bottom sheet untuk memenuhi satu persyaratan surat:
-/// - type == upload → pilih foto (kamera/galeri) → upload Cloudinary
+/// - type == upload → pilih foto (kamera/galeri) atau file (dokumen) → upload Cloudinary
 /// - type == text   → isi teks
 class SuratRequirementSheet extends StatefulWidget {
   final SuratRequirement requirement;
@@ -30,6 +31,7 @@ class _SuratRequirementSheetState extends State<SuratRequirementSheet> {
   bool _isUploading = false;
   String? _uploadedUrl;
   String? _errorMsg;
+  String? _uploadedFileName; // Nama file yang diupload (untuk dokumen)
   final TextEditingController _textCtrl = TextEditingController();
 
   @override
@@ -73,6 +75,51 @@ class _SuratRequirementSheetState extends State<SuratRequirementSheet> {
 
       setState(() {
         _uploadedUrl = url;
+        _uploadedFileName = null;
+        _isUploading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMsg = e.toString().replaceFirst('Exception: ', '');
+        _isUploading = false;
+      });
+    }
+  }
+
+  Future<void> _pickDocument() async {
+    setState(() {
+      _isUploading = true;
+      _errorMsg = null;
+    });
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) {
+        setState(() => _isUploading = false);
+        return;
+      }
+
+      final file = result.files.first;
+      if (file.bytes == null) {
+        throw Exception('Tidak dapat membaca file. Coba lagi.');
+      }
+
+      final cloudinary = CloudinaryService();
+      final url = await cloudinary.uploadFileBytes(
+        file.bytes!,
+        file.name,
+        folder: 'surat_docs',
+      );
+
+      if (url == null) throw Exception('Upload gagal. Coba lagi.');
+
+      setState(() {
+        _uploadedUrl = url;
+        _uploadedFileName = file.name;
         _isUploading = false;
       });
     } catch (e) {
@@ -169,17 +216,42 @@ class _SuratRequirementSheetState extends State<SuratRequirementSheet> {
               ),
             ),
           ] else ...[
-            // Preview foto jika sudah ada
+            // Preview foto/dokumen jika sudah ada
             if (_uploadedUrl != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  _uploadedUrl!,
-                  height: 160,
+              if (_uploadedFileName != null && _uploadedFileName!.toLowerCase().endsWith('.pdf')) ...[
+                // Preview dokumen PDF
+                Container(
                   width: double.infinity,
-                  fit: BoxFit.cover,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.picture_as_pdf, color: Colors.green.shade700, size: 40),
+                      const SizedBox(height: 8),
+                      Text(
+                        _uploadedFileName!,
+                        style: TextStyle(color: Colors.green.shade800, fontSize: 13, fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ] else ...[
+                // Preview gambar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    _uploadedUrl!,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               Center(
                 child: Text(
@@ -194,22 +266,39 @@ class _SuratRequirementSheetState extends State<SuratRequirementSheet> {
             if (_isUploading)
               const Center(child: CircularProgressIndicator(color: primaryRed))
             else
-              Row(
+              Column(
                 children: [
-                  Expanded(
-                    child: _buildUploadBtn(
-                      icon: Icons.camera_alt_rounded,
-                      label: 'Kamera',
-                      onTap: () => _pickAndUpload(true),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildUploadBtn(
+                          icon: Icons.camera_alt_rounded,
+                          label: 'Kamera',
+                          onTap: () => _pickAndUpload(true),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildUploadBtn(
+                          icon: Icons.photo_library_rounded,
+                          label: 'Galeri',
+                          onTap: () => _pickAndUpload(false),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildUploadBtn(
+                          icon: Icons.description_rounded,
+                          label: 'Dokumen',
+                          onTap: _pickDocument,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildUploadBtn(
-                      icon: Icons.photo_library_rounded,
-                      label: 'Galeri',
-                      onTap: () => _pickAndUpload(false),
-                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'PDF, DOC, JPG, PNG',
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
                   ),
                 ],
               ),
@@ -256,22 +345,22 @@ class _SuratRequirementSheetState extends State<SuratRequirementSheet> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
           color: const Color(0xFFFEF2F2),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF8B0000).withValues(alpha: 0.15)),
+          border: Border.all(color: const Color(0xFF8B0000).withOpacity(0.15)),
         ),
         child: Column(
           children: [
-            Icon(icon, color: const Color(0xFF8B0000), size: 28),
-            const SizedBox(height: 8),
+            Icon(icon, color: const Color(0xFF8B0000), size: 26),
+            const SizedBox(height: 6),
             Text(
               label,
               style: const TextStyle(
                 color: Color(0xFF8B0000),
                 fontWeight: FontWeight.w600,
-                fontSize: 13,
+                fontSize: 12,
               ),
             ),
           ],

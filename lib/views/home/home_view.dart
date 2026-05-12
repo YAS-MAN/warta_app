@@ -561,18 +561,7 @@ class _HomeViewState extends State<HomeView> {
                               children: [
                                 _buildActivityItem(
                                   context,
-                                  IconData(
-                                    item.iconCodePoint,
-                                    fontFamily: item.iconFontFamily,
-                                  ),
-                                  item.iconColor,
-                                  item.iconBgColor,
-                                  item.title,
-                                  item.subtitle,
-                                  item.date,
-                                  item.status,
-                                  item.statusTextColor,
-                                  item.statusBgColor,
+                                  item,
                                 ),
                                 if (idx < items.length - 1)
                                   const Padding(
@@ -742,26 +731,29 @@ class _HomeViewState extends State<HomeView> {
   // Item List Aktivitas
   Widget _buildActivityItem(
     BuildContext context,
-    IconData icon,
-    Color iconColor,
-    Color iconBg,
-    String title,
-    String subtitle,
-    String time,
-    String status,
-    Color statusColor,
-    Color statusBg,
+    AktivitasModel item,
   ) {
+    final icon = IconData(item.iconCodePoint, fontFamily: item.iconFontFamily);
+    final iconColor = item.iconColor;
+    final iconBg = item.iconBgColor;
+    final title = item.title;
+    final time = item.date;
+    final status = item.status;
+    final statusColor = item.statusTextColor;
+    final statusBg = item.statusBgColor;
+
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => AktivitasDetailView(
-              title: title,
-              subtitle: subtitle,
-              status: status,
-              time: time,
+              title: item.title,
+              subtitle: item.subtitle,
+              status: item.status,
+              time: item.date,
+              referenceId: item.referenceId,
+              activityType: item.activityType,
             ),
           ),
         );

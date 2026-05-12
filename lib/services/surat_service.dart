@@ -56,11 +56,45 @@ class SuratService {
     }).toList();
   }
 
+  Future<List<SuratModel>> getFilteredSurat({
+    String? category,
+    String? query,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    return _allSurat.where((surat) {
+      bool matchesCategory = true;
+      if (category != null && category.isNotEmpty && category != "Semua Kategori") {
+        matchesCategory = surat.category.toLowerCase() == category.toLowerCase();
+      }
+      bool matchesQuery = true;
+      if (query != null && query.trim().isNotEmpty) {
+        final kw = query.trim().toLowerCase();
+        matchesQuery = surat.title.toLowerCase().contains(kw) ||
+            surat.description.toLowerCase().contains(kw) ||
+            surat.category.toLowerCase().contains(kw);
+      }
+      return matchesCategory && matchesQuery;
+    }).toList();
+  }
+
   Future<void> submitSurat({
     required UserModel user,
     required String jenisSurat,
+    String? customBody,
   }) async {
     final trimmedJenisSurat = jenisSurat.trim();
+
+    // Cek duplikasi: jika sudah ada submission PROSES untuk jenis surat yang sama
+    final existing = await _suratSubmissions
+        .where('userId', isEqualTo: user.uid)
+        .where('jenisSurat', isEqualTo: trimmedJenisSurat)
+        .where('status', isEqualTo: 'PROSES')
+        .limit(1)
+        .get();
+    if (existing.docs.isNotEmpty) {
+      throw Exception('Anda sudah memiliki pengajuan "$trimmedJenisSurat" yang sedang diproses.');
+    }
+
     final submissionDoc = await _suratSubmissions.add({
       'userId': user.uid,
       'nama': user.nama,
@@ -70,6 +104,7 @@ class SuratService {
       'rt': user.rt ?? '',
       'rw': user.rw ?? '',
       'kelurahan': user.kelurahan ?? '',
+      'customBody': customBody,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
@@ -81,6 +116,53 @@ class SuratService {
       status: 'PROSES',
       activityType: 'surat',
       referenceId: submissionDoc.id,
+    );
+  }
+
+  /// Ajukan ulang surat yang sudah DITOLAK — update submission lama (bukan buat baru)
+  Future<void> resubmitSurat({
+    required String submissionId,
+    required String userId,
+    String? customBody,
+  }) async {
+    await _suratSubmissions.doc(submissionId).update({
+      'status': 'PROSES',
+      'customBody': customBody,
+      'rejectionReason': FieldValue.delete(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    // Update aktivitas lama, bukan buat baru
+    await _aktivitasService.updateActivityByReference(
+      userId: userId,
+      referenceId: submissionId,
+      newStatus: 'PROSES',
+      newSubtitle: 'Pengajuan ulang surat telah dikirim dan menunggu verifikasi RT.',
+    );
+  }
+
+  /// Ambil submission berdasarkan ID (untuk preview/detail)
+  Future<SuratSubmissionModel?> getSubmissionById(String submissionId) async {
+    if (submissionId.isEmpty) return null;
+    final doc = await _suratSubmissions.doc(submissionId).get();
+    if (!doc.exists || doc.data() == null) return null;
+    // Build a QueryDocumentSnapshot-compatible object manually
+    final data = doc.data()!;
+    return SuratSubmissionModel(
+      id: doc.id,
+      userId: (data['userId'] ?? '').toString(),
+      nama: (data['nama'] ?? '-').toString(),
+      nik: (data['nik'] ?? '-').toString(),
+      jenisSurat: (data['jenisSurat'] ?? 'Surat').toString(),
+      status: (data['status'] ?? 'PROSES').toString().toUpperCase(),
+      rt: (data['rt'] ?? '').toString(),
+      rw: (data['rw'] ?? '').toString(),
+      kelurahan: (data['kelurahan'] ?? '').toString(),
+      customBody: data['customBody'] as String?,
+      rejectionReason: data['rejectionReason'] as String?,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      actedByUid: data['actedByUid'] as String?,
     );
   }
 
@@ -114,30 +196,44 @@ class SuratService {
     required String submissionId,
     required String newStatus,
     required String actedByUid,
+    String? rejectionReason,
   }) async {
     final normalizedStatus = newStatus.toUpperCase();
     final doc = await _suratSubmissions.doc(submissionId).get();
     final data = doc.data();
     if (data == null) return;
 
-    await _suratSubmissions.doc(submissionId).update({
+    final Map<String, dynamic> updateData = {
       'status': normalizedStatus,
       'updatedAt': FieldValue.serverTimestamp(),
       'actedByUid': actedByUid,
-    });
+    };
+    if (rejectionReason != null && rejectionReason.isNotEmpty) {
+      updateData['rejectionReason'] = rejectionReason;
+    }
+
+    await _suratSubmissions.doc(submissionId).update(updateData);
 
     final userId = (data['userId'] ?? '').toString();
     final jenisSurat = (data['jenisSurat'] ?? 'Pengajuan surat').toString();
     if (userId.isNotEmpty) {
-      await _aktivitasService.addActivity(
+      String subtitle = 'Pengajuan surat sedang diproses.';
+      if (normalizedStatus == 'PROSES RW') {
+        subtitle = 'Pengajuan surat telah disetujui RT. Menunggu verifikasi RW.';
+      } else if (normalizedStatus == 'PROSES LURAH') {
+        subtitle = 'Pengajuan surat telah disetujui RW. Menunggu pengesahan akhir dari Kelurahan/Lurah.';
+      } else if (normalizedStatus == 'BERHASIL') {
+        subtitle = 'Pengajuan surat telah disetujui dan diterbitkan resmi oleh Kelurahan.';
+      } else if (normalizedStatus.contains('TOLAK')) {
+        subtitle = 'Pengajuan surat ditolak.${rejectionReason != null && rejectionReason.isNotEmpty ? ' Alasan: $rejectionReason' : ''}';
+      }
+
+      // Update aktivitas yang sudah ada, bukan buat baru
+      await _aktivitasService.updateActivityByReference(
         userId: userId,
-        title: jenisSurat,
-        subtitle: normalizedStatus == 'BERHASIL'
-            ? 'Pengajuan surat telah disetujui RT.'
-            : 'Pengajuan surat ditolak RT.',
-        status: normalizedStatus,
-        activityType: 'surat',
         referenceId: submissionId,
+        newStatus: normalizedStatus,
+        newSubtitle: subtitle,
       );
     }
   }
@@ -158,27 +254,6 @@ class SuratService {
     description: 'Foto KK dari profil Anda',
     type: RequirementType.auto,
     autoSourceField: 'kkUrl',
-  );
-
-  static const _reqFormF102 = SuratRequirement(
-    id: 'form_f102',
-    label: 'Formulir F1-02 (Peristiwa Kependudukan)',
-    description: 'Download & isi formulir dari Disdukcapil, lalu upload foto/scan',
-    type: RequirementType.upload,
-  );
-
-  static const _reqFormF103 = SuratRequirement(
-    id: 'form_f103',
-    label: 'Formulir F1-03 (Perpindahan Penduduk)',
-    description: 'Download & isi formulir perpindahan dari Disdukcapil',
-    type: RequirementType.upload,
-  );
-
-  static const _reqFormF201 = SuratRequirement(
-    id: 'form_f201',
-    label: 'Formulir F2-01 (Pelaporan Pencatatan Sipil)',
-    description: 'Download & isi formulir F2.01 dari Disdukcapil, lalu upload',
-    type: RequirementType.upload,
   );
 
   static List<SuratModel> _generateDummySurat() {
@@ -207,12 +282,12 @@ class SuratService {
         [
           _reqKtp,
           _reqKk,
-          _reqFormF102,
           const SuratRequirement(
             id: 'dok_pendukung_kk',
             label: 'Dokumen Pendukung (Buku Nikah / Surat Cerai / Pernyataan)',
             description: 'Sesuai jenis permohonan KK Anda',
             type: RequirementType.upload,
+            isRequired: false,
           ),
         ],
         [SuratFieldModel(label: "Jenis Permohonan KK", hint: "Misal: Pecah KK / Cetak Ulang")],
@@ -223,16 +298,16 @@ class SuratService {
         Icons.badge,
         [
           _reqKk,
-          _reqFormF102,
           const SuratRequirement(
             id: 'surat_hilang_ktp',
             label: 'Surat Kehilangan dari Kepolisian (jika hilang/rusak)',
             description: 'Surat keterangan kehilangan KTP dari Polsek/Polres',
             type: RequirementType.upload,
+            isRequired: false,
           ),
         ],
         [SuratFieldModel(label: "Jenis Permohonan KTP", hint: "Misal: Perekaman Baru / Hilang / Rusak")],
-        "Menerangkan bahwa individu di atas sedang dalam proses pengurusan KTP-el melalui Disdukcapil Surabaya.",
+        "Menerangkan bahwa individu di atas sedang dalam proses pengurusan KTP-el melalui sistem WARTA.",
       ),
       mk(
         "Administrasi", "Akta Kelahiran", "Penerbitan Surat Keterangan Lahir",
@@ -240,7 +315,6 @@ class SuratService {
         [
           _reqKtp,
           _reqKk,
-          _reqFormF201,
           const SuratRequirement(
             id: 'surat_lahir_bidan',
             label: 'Surat Keterangan Lahir dari Bidan / Dokter / RS',
@@ -259,14 +333,13 @@ class SuratService {
           SuratFieldModel(label: "Tanggal Lahir Anak", hint: "DD/MM/YYYY"),
           SuratFieldModel(label: "Tempat Lahir", hint: "Kota/Kabupaten"),
         ],
-        "Menerangkan bahwa individu di atas mengajukan permohonan Akta Kelahiran untuk anggota keluarga melalui Disdukcapil Surabaya.",
+        "Menerangkan bahwa individu di atas mengajukan permohonan Akta Kelahiran untuk anggota keluarga melalui sistem WARTA.",
       ),
       mk(
         "Administrasi", "Akta Kematian", "Pelaporan Meninggal Dunia",
         Icons.nights_stay,
         [
           _reqKtp,
-          _reqFormF201,
           const SuratRequirement(
             id: 'surat_kematian_dokter',
             label: 'Surat Keterangan Kematian dari Dokter / Pernyataan Keluarga',
@@ -292,8 +365,6 @@ class SuratService {
         [
           _reqKtp,
           _reqKk,
-          _reqFormF102,
-          _reqFormF103,
           const SuratRequirement(
             id: 'skpwni',
             label: 'Surat Keterangan Pindah WNI (SKPWNI)',
@@ -434,7 +505,7 @@ class SuratService {
         ],
         [
           SuratFieldModel(label: "Keperluan / Tujuan SKTM", hint: "Misal: Pendaftaran Sekolah Anak"),
-          SuratFieldModel(label: "Penghasilan Per Bulan", hint: "Misal: Rp 1.500.000"),
+          SuratFieldModel(label: "Penghasilan Per Bulan", hint: "Misal: 1.500.000", isCurrency: true),
         ],
         "Menerangkan bahwa individu tersebut di atas adalah warga yang berstatus tidak mampu secara ekonomi, sehingga layak mendapat keringanan.",
       ),
@@ -497,6 +568,7 @@ class SuratService {
             label: 'Surat Pernyataan Belum Menikah (jika diperlukan)',
             description: 'Surat pernyataan bermaterai status lajang',
             type: RequirementType.upload,
+            isRequired: false,
           ),
         ],
         [SuratFieldModel(label: "Keperluan", hint: "Misal: Melamar Pekerjaan / Pendaftaran Nikah")],

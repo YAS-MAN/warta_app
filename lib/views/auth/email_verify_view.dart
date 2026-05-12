@@ -41,31 +41,46 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
 
   Future<void> _checkVerification({bool silent = false}) async {
     if (_isChecking) return;
-    setState(() => _isChecking = true);
+    if (!silent) setState(() => _isChecking = true);
 
     final authVM = context.read<AuthViewModel>();
     final verified = await authVM.checkEmailVerified();
 
     if (!mounted) return;
-    setState(() => _isChecking = false);
+    if (!silent) setState(() => _isChecking = false);
 
     if (verified) {
       _autoCheckTimer?.cancel();
       await authVM.finalizeRegistration();
       if (!mounted) return;
+      if (!mounted) return;
+      
+      // Tampilkan notifikasi sukses di ATAS menggunakan MaterialBanner
+      ScaffoldMessenger.of(context).showMaterialBanner(
+        MaterialBanner(
+          content: const Text(
+            '🎉 Email terverifikasi! Silakan login.',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          actions: [
+            TextButton(
+              onPressed: () => ScaffoldMessenger.of(context).hideCurrentMaterialBanner(),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+      // Tunggu sebentar agar user sempat baca banner sebelum pindah
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginView()),
         (route) => false,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('🎉 Email terverifikasi! Silakan login dengan akun Anda.'),
-          backgroundColor: const Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
       );
     } else if (!silent) {
       ScaffoldMessenger.of(context).showSnackBar(

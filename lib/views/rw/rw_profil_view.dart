@@ -27,6 +27,7 @@ class _RwProfilViewState extends State<RwProfilView> {
   static const Color textDark = Color(0xFF1F2937);
   static const Color textGray = Color(0xFF6B7280);
   static const Color borderColor = Color(0xFFE5E7EB);
+  static const Color goldColor = Color(0xFFD4AF37);
 
   @override
   void initState() {
@@ -183,26 +184,56 @@ class _RwProfilViewState extends State<RwProfilView> {
     showDialog(
       context: context,
       builder: (ctx) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: AlertDialog(
-          backgroundColor: Colors.white.withValues(alpha: 0.9),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.white.withValues(alpha: 0.8), width: 1.5)),
-          title: const Text("Keluar", style: TextStyle(fontWeight: FontWeight.bold)),
-          content: const Text("Apakah kamu yakin ingin keluar dari akun ini?"),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Batal", style: TextStyle(color: Colors.grey))),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: primaryRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
-              onPressed: () async {
-                Navigator.pop(ctx);
-                await authVM.logout();
-                if (context.mounted) {
-                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const AuthGate()), (route) => false);
-                }
-              },
-              child: const Text("Keluar", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Dialog(
+          backgroundColor: Colors.white.withValues(alpha: 0.85),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28), side: BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 1.5)),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("Konfirmasi Logout", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+                const SizedBox(height: 12),
+                const Text(
+                  "Apakah Anda yakin ingin keluar dari sesi aplikasi WARTA Anda saat ini?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 13, height: 1.5),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                        child: const Text("BATAL", style: TextStyle(color: Color(0xFF9CA3AF), fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          await authVM.logout();
+                          if (context.mounted) {
+                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const AuthGate()), (route) => false);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B0000),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: 0,
+                        ),
+                        child: const Text("KELUAR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -249,8 +280,6 @@ class _RwProfilViewState extends State<RwProfilView> {
       final uploadedUrl = await _cloudinaryService.uploadImageXFile(imageFile, folder: 'rw_signatures');
       if (uploadedUrl == null || uploadedUrl.isEmpty) throw Exception('Upload gagal.');
 
-      // For RW, we use 'rwSignatureUrl' field (need to make sure model supports it or just use a generic field)
-      // Actually RT uses 'rtSignatureUrl'. Let's use 'rwSignatureUrl' for consistency.
       await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'rwSignatureUrl': uploadedUrl});
       await authVM.loadCurrentUser(user.uid);
       if (!mounted) return;
@@ -266,6 +295,7 @@ class _RwProfilViewState extends State<RwProfilView> {
   Widget _buildIdentityCard(AuthViewModel authVM) {
     final user = authVM.currentUser;
     final selfieUrl = user?.selfieUrl ?? '';
+    final signatureUrl = user?.rwSignatureUrl ?? '';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
@@ -286,15 +316,12 @@ class _RwProfilViewState extends State<RwProfilView> {
                   children: [
                     Container(
                       width: 32, height: 32,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
-                      ),
+                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1)),
                       child: ClipOval(
                         child: Column(
                           children: [
-                            Expanded(child: Container(color: const Color(0xFFED1C24))), // Red
-                            Expanded(child: Container(color: Colors.white)), // White
+                            Expanded(child: Container(color: const Color(0xFFED1C24))),
+                            Expanded(child: Container(color: Colors.white)),
                           ],
                         ),
                       ),
@@ -325,17 +352,31 @@ class _RwProfilViewState extends State<RwProfilView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                CircleAvatar(
-                  radius: 24, backgroundColor: const Color(0xFFFEF2F2),
-                  backgroundImage: selfieUrl.isNotEmpty ? NetworkImage(selfieUrl) : null,
-                  child: selfieUrl.isEmpty ? const Icon(Icons.person, color: primaryRed) : null,
-                ),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
                   children: [
-                    Text("JABATAN", style: TextStyle(color: Colors.white70, fontSize: 8)),
-                    Text("KETUA RW", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                    CircleAvatar(
+                      radius: 24, backgroundColor: const Color(0xFFFEF2F2),
+                      backgroundImage: selfieUrl.isNotEmpty ? NetworkImage(selfieUrl) : null,
+                      child: selfieUrl.isEmpty ? const Icon(Icons.person, color: primaryRed) : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: goldColor.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: goldColor.withValues(alpha: 0.35)),
+                      ),
+                      child: const Text("KETUA RW", style: TextStyle(color: goldColor, fontWeight: FontWeight.bold, fontSize: 10)),
+                    ),
                   ],
+                ),
+                Container(
+                  width: 70, height: 44,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                  child: signatureUrl.isNotEmpty
+                    ? ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network(signatureUrl, fit: BoxFit.cover))
+                    : const Center(child: Text("TTD", style: TextStyle(color: primaryRed, fontWeight: FontWeight.bold))),
                 ),
               ],
             ),
@@ -420,35 +461,6 @@ class _RwProfilViewState extends State<RwProfilView> {
 
                 const SizedBox(height: 8),
 
-                // Signature Section
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: borderColor), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)]),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Tanda Tangan Digital RW", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textDark)),
-                        const SizedBox(height: 12),
-                        Container(
-                          width: double.infinity, height: 120,
-                          decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor, style: BorderStyle.solid)),
-                          child: _isUploadingSignature 
-                            ? const Center(child: CircularProgressIndicator(color: primaryRed))
-                            : (user?.rwSignatureUrl != null && user!.rwSignatureUrl!.isNotEmpty)
-                              ? ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(user.rwSignatureUrl!, fit: BoxFit.contain))
-                              : Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.drive_file_rename_outline, color: Colors.grey.withValues(alpha: 0.5), size: 32), const SizedBox(height: 8), const Text("Belum ada tanda tangan", style: TextStyle(color: Colors.grey, fontSize: 11))])),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(width: double.infinity, child: ElevatedButton.icon(onPressed: () => _showSignatureUploadSheet(authVM), icon: const Icon(Icons.upload, size: 16, color: Colors.white), label: const Text("Upload Tanda Tangan", style: TextStyle(color: Colors.white, fontSize: 12)), style: ElevatedButton.styleFrom(backgroundColor: primaryRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))))),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
                 // Sistem Administrasi
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -461,6 +473,8 @@ class _RwProfilViewState extends State<RwProfilView> {
                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: borderColor)),
                         child: Column(
                           children: [
+                            _buildMenuItem(Icons.drive_file_rename_outline_rounded, "Tanda Tangan Digital", subtitle: "Atur tanda tangan untuk persetujuan surat", onTap: () => _showSignatureUploadSheet(authVM)),
+                            const Divider(height: 1, color: borderColor),
                             _buildMenuItem(Icons.people_alt_outlined, "Daftar Penduduk RW", subtitle: "Seluruh warga dalam wilayah RW", onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => RwResidentsView(kelurahan: user?.kelurahan ?? '', rw: user?.rw ?? '')));
                             }),
@@ -505,7 +519,7 @@ class _RwProfilViewState extends State<RwProfilView> {
               ],
             ),
           ),
-          if (authVM.isLoading) Container(color: Colors.black.withValues(alpha: 0.35), child: const Center(child: CircularProgressIndicator(color: Colors.white))),
+          if (authVM.isLoading || _isUploadingSignature) Container(color: Colors.black.withValues(alpha: 0.35), child: const Center(child: CircularProgressIndicator(color: Colors.white))),
         ],
       ),
     );

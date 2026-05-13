@@ -17,7 +17,6 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
   static const Color primaryRed = Color(0xFF8B1E1E);
   static const Color textDark = Color(0xFF0F172A);
   static const Color textGray = Color(0xFF64748B);
-  static const Color goldColor = Color(0xFFD4AF37);
 
   bool _isChecking = false;
   bool _canResend = true;
@@ -140,48 +139,30 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
       backgroundColor: bgGray,
       body: Column(
         children: [
-          // HEADER
-          SizedBox(
-            height: 180,
+          // HEADER - Reduced height
+          Container(
+            height: 140, // Reduced from 180
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color.fromARGB(255, 83, 0, 0), Color(0xFF8B0000)],
+                begin: Alignment.topLeft, end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
+            ),
             child: Stack(
-              clipBehavior: Clip.none,
               children: [
-                Container(
-                  height: 180, width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color.fromARGB(255, 83, 0, 0), Color(0xFF8B0000)],
-                      begin: Alignment.topLeft, end: Alignment.bottomRight,
-                    ),
-                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 15, offset: const Offset(0, 5))],
+                Positioned(
+                  right: -20, top: -20,
+                  child: Transform.rotate(
+                    angle: 12 * 3.14159 / 180,
+                    child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 120, height: 120, color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1)),
                   ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          right: 20, top: 20,
-                          child: Transform.rotate(
-                            angle: 12 * 3.14159 / 180,
-                            child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 140, height: 140, color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1)),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const SizedBox(width: 8),
-                              const Expanded(
-                                child: Text("Verifikasi Email", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(24, 60, 24, 0),
+                  child: Text("Verifikasi Email", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -189,125 +170,110 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
 
           // CONTENT
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-
-                    // Icon
-                    Container(
-                      width: 90, height: 90,
-                      decoration: BoxDecoration(
-                        color: goldColor.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: goldColor.withValues(alpha: 0.3), width: 2),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute content
+                children: [
+                  Column(
+                    children: [
+                      const Text("Cek Email Anda", style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: textDark, letterSpacing: -0.5)),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Kami telah mengirimkan link verifikasi ke:",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: textGray, fontWeight: FontWeight.w500),
                       ),
-                      child: const Icon(Icons.mark_email_read_outlined, size: 44, color: goldColor),
+                      const SizedBox(height: 16),
+
+                      // Adjusted Email Icon / Placeholder (Balanced)
+                      Container(
+                        width: 70, height: 70,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF1F1), // Light pink
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: primaryRed.withValues(alpha: 0.1), width: 1.5),
+                        ),
+                        child: const Icon(Icons.mail_outline_rounded, size: 36, color: primaryRed),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        widget.email,
+                        style: const TextStyle(color: primaryRed, fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                    ],
+                  ),
+
+                  // Instructions Card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFF1F5F9)),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
-                    const SizedBox(height: 28),
-
-                    const Text("Cek Email Anda", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: textDark, letterSpacing: -0.5)),
-                    const SizedBox(height: 14),
-
-                    Text(
-                      "Kami telah mengirimkan link verifikasi ke:",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: textGray, height: 1.5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Langkah Verifikasi:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark)),
+                        const SizedBox(height: 16),
+                        _buildStep("1", "Buka aplikasi email Anda (Gmail, Outlook, dll)"),
+                        _buildStep("2", "Cari email dari WARTA / Firebase"),
+                        _buildStep("3", "Klik link verifikasi di dalam email"),
+                        _buildStep("4", "Kembali ke sini dan tekan tombol di bawah"),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(Icons.info_outline, size: 14, color: Colors.amber.shade700),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text("Cek juga folder Spam jika email tidak ditemukan.", style: TextStyle(fontSize: 11, color: Colors.amber.shade800, fontStyle: FontStyle.italic))),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                  ),
 
-                    // Email address
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF2F2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: primaryRed.withValues(alpha: 0.15)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.email_outlined, color: primaryRed, size: 18),
-                          const SizedBox(width: 8),
-                          Flexible(child: Text(widget.email, style: const TextStyle(color: primaryRed, fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Instructions
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Langkah Verifikasi:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textDark)),
-                          const SizedBox(height: 12),
-                          _buildStep("1", "Buka aplikasi email Anda (Gmail, Outlook, dll)"),
-                          _buildStep("2", "Cari email dari WARTA / Firebase"),
-                          _buildStep("3", "Klik link verifikasi di dalam email"),
-                          _buildStep("4", "Kembali ke sini dan tekan tombol di bawah"),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(Icons.info_outline, size: 14, color: Colors.amber.shade700),
-                              const SizedBox(width: 6),
-                              Expanded(child: Text("Cek juga folder Spam jika email tidak ditemukan.", style: TextStyle(fontSize: 11, color: Colors.amber.shade800, fontStyle: FontStyle.italic))),
-                            ],
+                  // BUTTONS
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity, height: 56,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 0,
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 36),
-
-                    // VERIFY BUTTON
-                    SizedBox(
-                      width: double.infinity, height: 56,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 4,
-                          shadowColor: const Color(0xFF10B981).withValues(alpha: 0.4),
-                        ),
-                        onPressed: _isChecking ? null : () => _checkVerification(),
-                        icon: _isChecking
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Icon(Icons.verified_outlined, color: Colors.white),
-                        label: Text(
-                          _isChecking ? "MEMERIKSA..." : "SUDAH VERIFIKASI",
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16, letterSpacing: 0.8),
+                          onPressed: _isChecking ? null : () => _checkVerification(),
+                          icon: _isChecking
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : const Icon(Icons.check_circle_outline, color: Colors.white),
+                          label: Text(
+                            _isChecking ? "MEMERIKSA..." : "SUDAH VERIFIKASI",
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 0.5),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // RESEND BUTTON
-                    SizedBox(
-                      width: double.infinity, height: 48,
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: _canResend ? primaryRed : Colors.grey.shade300, width: 1.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                        onPressed: _canResend ? _resendEmail : null,
-                        icon: Icon(Icons.refresh, color: _canResend ? primaryRed : Colors.grey, size: 18),
-                        label: Text(
-                          _canResend ? "KIRIM ULANG EMAIL" : "KIRIM ULANG ($_resendCooldown detik)",
-                          style: TextStyle(color: _canResend ? primaryRed : Colors.grey, fontWeight: FontWeight.w600, fontSize: 13),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity, height: 52,
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: _canResend ? primaryRed : Colors.grey.shade300, width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          onPressed: _canResend ? _resendEmail : null,
+                          icon: Icon(Icons.refresh_rounded, color: _canResend ? primaryRed : Colors.grey, size: 20),
+                          label: Text(
+                            _canResend ? "KIRIM ULANG EMAIL" : "KIRIM ULANG ($_resendCooldown d)",
+                            style: TextStyle(color: _canResend ? primaryRed : Colors.grey, fontWeight: FontWeight.w600, fontSize: 14),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),

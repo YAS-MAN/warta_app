@@ -26,6 +26,7 @@ class UserModel {
   final String? nomorTelepon;
   final String? rtSignatureUrl;
   final String? rwSignatureUrl;
+  final String? lurahSignatureUrl;
   final String? kkUrl;
   final DateTime? createdAt;
 
@@ -55,6 +56,7 @@ class UserModel {
     this.nomorTelepon,
     this.rtSignatureUrl,
     this.rwSignatureUrl,
+    this.lurahSignatureUrl,
     this.kkUrl,
     this.createdAt,
   });
@@ -87,6 +89,7 @@ class UserModel {
       nomorTelepon: data['nomor_telepon'],
       rtSignatureUrl: data['rtSignatureUrl'],
       rwSignatureUrl: data['rwSignatureUrl'],
+      lurahSignatureUrl: data['lurahSignatureUrl'],
       kkUrl: data['kkUrl'],
       createdAt: data['createdAt'] is Timestamp
           ? (data['createdAt'] as Timestamp).toDate()
@@ -95,6 +98,8 @@ class UserModel {
                 : null),
     );
   }
+
+  Map<String, dynamic> toJson() => toFirestore();
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -122,6 +127,7 @@ class UserModel {
       if (nomorTelepon != null) 'nomor_telepon': nomorTelepon,
       if (rtSignatureUrl != null) 'rtSignatureUrl': rtSignatureUrl,
       if (rwSignatureUrl != null) 'rwSignatureUrl': rwSignatureUrl,
+      if (lurahSignatureUrl != null) 'lurahSignatureUrl': lurahSignatureUrl,
       if (kkUrl != null) 'kkUrl': kkUrl,
       if (createdAt != null) 'createdAt': createdAt,
     };

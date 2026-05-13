@@ -507,403 +507,209 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgGray,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // 1. HEADER MERAH MELENGKUNG
-            SizedBox(
-              height: 180,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color.fromARGB(255, 83, 0, 0),
-                          Color(0xFF8B0000),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(40),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(40),
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            right: 20,
-                            top: 20,
-                            child: Transform.rotate(
-                              angle: 12 * 3.14159 / 180,
-                              child: Image(
-                                image: const AssetImage(
-                                  'assets/images/warta_logo.png',
-                                ),
-                                width: 140,
-                                height: 140,
-                                color: const Color.fromARGB(
-                                  255,
-                                  58,
-                                  1,
-                                  1,
-                                ).withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                InkWell(
-                                  onTap: () => Navigator.pop(context),
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.arrow_back,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Text(
-                                    "Scan e-KTP",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+      body: Column(
+        children: [
+          // 1. HEADER - Sacrificed height to avoid scrolling
+          Container(
+            height: 120,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color.fromARGB(255, 83, 0, 0), Color(0xFF8B0000)],
+                begin: Alignment.topLeft, end: Alignment.bottomRight,
               ),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
             ),
-
-            const SizedBox(height: 32),
-
-            // 2. KONTEN TENGAH
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: iconBgLight,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.credit_card,
-                      size: 40,
-                      color: primaryRed,
-                    ),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -10, top: -10,
+                  child: Transform.rotate(
+                    angle: 12 * 3.14159 / 180,
+                    child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 100, height: 100, color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1)),
                   ),
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    "Foto & Verifikasi e-KTP",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: textDark,
-                      letterSpacing: -0.6,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: const TextSpan(
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: textGray,
-                        height: 1.5,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 50, 24, 0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                        onPressed: () => Navigator.pop(context),
                       ),
-                      children: [
-                        TextSpan(
-                          text:
-                              "Posisikan e-KTP kamu di dalam bingkai agar data bisa terbaca otomatis oleh sistem ",
+                      const Text("Scan e-KTP", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 2. KONTEN
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      Container(
+                        width: 60, height: 60,
+                        decoration: BoxDecoration(color: iconBgLight, borderRadius: BorderRadius.circular(16)),
+                        child: const Icon(Icons.credit_card_rounded, size: 32, color: primaryRed),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text("Foto & Verifikasi e-KTP", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: textDark, letterSpacing: -0.5)),
+                      const SizedBox(height: 8),
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: const TextSpan(
+                          style: TextStyle(fontSize: 13, color: textGray, height: 1.4),
+                          children: [
+                            TextSpan(text: "Posisikan e-KTP kamu di dalam bingkai agar data bisa terbaca otomatis oleh sistem "),
+                            TextSpan(text: "WARTA", style: TextStyle(color: primaryRed, fontWeight: FontWeight.bold)),
+                            TextSpan(text: "."),
+                          ],
                         ),
-                        TextSpan(
-                          text: "WARTA",
-                          style: TextStyle(
-                            color: primaryRed,
-                            fontWeight: FontWeight.bold,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 3. Area Preview KTP
+                      GestureDetector(
+                        onTap: _isProcessing ? null : _ambilFotoKTP,
+                        child: DottedBorder(
+                          color: goldColor.withValues(alpha: 0.5),
+                          strokeWidth: 2,
+                          dashPattern: const [8, 4],
+                          borderType: BorderType.RRect,
+                          radius: const Radius.circular(16),
+                          child: Container(
+                            width: double.infinity,
+                            height: 180, // Optimized height
+                            decoration: BoxDecoration(color: goldColor.withValues(alpha: 0.03), borderRadius: BorderRadius.circular(16)),
+                            child: _ktpImage != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        kIsWeb ? Image.network(_ktpImage!.path, fit: BoxFit.cover) : Image.file(File(_ktpImage!.path), fit: BoxFit.cover),
+                                        if (_isProcessing)
+                                          Container(
+                                            color: Colors.black.withValues(alpha: 0.6),
+                                            child: const Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                                SizedBox(height: 16),
+                                                Text("Membaca data KTP...", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                              ],
+                                            ),
+                                          ),
+                                        if (!_isProcessing)
+                                          Container(
+                                            color: Colors.black.withValues(alpha: 0.1),
+                                            alignment: Alignment.center,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(10),
+                                              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+                                              child: const Icon(Icons.refresh_rounded, color: Colors.white, size: 32),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  )
+                                : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.add_a_photo_outlined, size: 40, color: goldColor),
+                                      const SizedBox(height: 12),
+                                      const Text("Area e-KTP", style: TextStyle(color: goldColor, fontSize: 15, fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 4),
+                                      const Text("Ketuk area ini untuk mengambil foto", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+                                    ],
+                                  ),
                           ),
                         ),
-                        TextSpan(text: "."),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 32),
 
-                  // 3. Area Preview KTP
-                  GestureDetector(
-                    onTap: _isProcessing ? null : _ambilFotoKTP,
-                    child: DottedBorder(
-                      color: goldColor,
-                      strokeWidth: 2,
-                      dashPattern: const [8, 4],
-                      borderType: BorderType.RRect,
-                      radius: const Radius.circular(12),
-                      child: Container(
-                        width: double.infinity,
-                        height: 190,
-                        decoration: BoxDecoration(
-                          color: goldColor.withValues(alpha: 0.05),
-                        ),
-                        child: _ktpImage != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Stack(
-                                  fit: StackFit.expand,
+                  // 3b. STATUS & TOMBOL
+                  Column(
+                    children: [
+                      if (_ktpImage != null && !_isProcessing) ...[
+                        _isKtpReady
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.green.shade200)),
+                                child: Row(
                                   children: [
-                                    kIsWeb
-                                        ? Image.network(
-                                            _ktpImage!.path,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Image.file(
-                                            File(_ktpImage!.path),
-                                            fit: BoxFit.cover,
-                                          ),
-                                    if (_isProcessing)
-                                      Container(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                        child: const Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            CircularProgressIndicator(
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(height: 12),
-                                            Text(
-                                              "Membaca data KTP...",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    if (!_isProcessing)
-                                      Container(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: const Icon(
-                                          Icons.refresh,
-                                          color: Colors.white,
-                                          size: 40,
-                                        ),
-                                      ),
+                                    Icon(Icons.check_circle_rounded, color: Colors.green.shade600, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(child: Text("Data KTP terbaca! Silakan lanjut.", style: TextStyle(color: Colors.green.shade800, fontSize: 13, fontWeight: FontWeight.w600))),
                                   ],
                                 ),
                               )
-                            : const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.camera_alt_outlined,
-                                    size: 30,
-                                    color: goldColor,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    "Area e-KTP",
-                                    style: TextStyle(
-                                      color: goldColor,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    "Ketuk area ini untuk mengambil foto",
-                                    style: TextStyle(
-                                      color: Color(0xFF94A3B8),
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
+                            : Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.orange.shade200)),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.warning_amber_rounded, color: Colors.orange.shade600, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(child: Text("KTP kurang jelas? Coba ambil ulang.", style: TextStyle(color: Colors.orange.shade800, fontSize: 13, fontWeight: FontWeight.w600))),
+                                  ],
+                                ),
                               ),
+                        const SizedBox(height: 20),
+                      ],
+                      
+                      SizedBox(
+                        width: double.infinity, height: 56,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _isKtpReady ? const Color(0xFF10B981) : primaryRed,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 0,
+                          ),
+                          onPressed: (_ktpImage == null || _isProcessing) ? null : _lanjutKeForm,
+                          icon: Icon(_isKtpReady ? Icons.arrow_forward_rounded : Icons.camera_alt_rounded, color: Colors.white),
+                          label: Text(
+                            _ktpImage == null ? "AMBIL FOTO KTP" : (_isKtpReady ? "SELANJUTNYA" : "TETAP LANJUTKAN"),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity, height: 48,
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF64748B), width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const FormRegistView(prefilledData: {}, ktpImageFile: null),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.edit_note, color: Color(0xFF64748B), size: 20),
+                          label: const Text("INPUT DATA MANUAL", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600, fontSize: 14)),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-
-            // 3b. STATUS SINGKAT (muncul setelah foto diambil)
-            if (_ktpImage != null && !_isProcessing)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                child: _isKtpReady
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.green.shade300),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.check_circle, color: Colors.green.shade700, size: 22),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                "Data KTP berhasil terbaca. Tekan 'Selanjutnya' untuk melanjutkan.",
-                                style: TextStyle(color: Colors.green.shade800, fontSize: 13, fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFFFCA5A5)),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 22),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                "Gagal membaca KTP. Coba foto ulang atau gunakan 'Input Data Manual' di bawah.",
-                                style: TextStyle(color: Color(0xFF991B1B), fontSize: 13, fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-              ),
-
-            const SizedBox(height: 24),
-
-            // 4. TOMBOL SELANJUTNYA
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isKtpReady
-                        ? Colors.green
-                        : Colors.grey.shade400,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: _isKtpReady
-                            ? Colors.green.shade700
-                            : Colors.transparent,
-                        width: 1,
-                      ),
-                    ),
-                    elevation: _isKtpReady ? 5 : 0,
-                    shadowColor: _isKtpReady
-                        ? Colors.green.withValues(alpha: 0.5)
-                        : Colors.transparent,
-                  ),
-                  onPressed: _isKtpReady ? _lanjutKeForm : null,
-                  icon: const Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  label: const Text(
-                    "SELANJUTNYA",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Tombol Input Manual — untuk user yang OCR gagal terus
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF64748B), width: 1.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const FormRegistView(
-                          prefilledData: {},
-                          ktpImageFile: null,
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit_note, color: Color(0xFF64748B), size: 20),
-                  label: const Text(
-                    "INPUT DATA MANUAL",
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -217,6 +217,29 @@ class SuratService {
     });
   }
 
+  /// Stream surat submissions yang menunggu pengesahan akhir Lurah (status 'PROSES LURAH')
+  Stream<List<SuratSubmissionModel>> streamSubmissionsForLurah({
+    required String kelurahan,
+  }) {
+    if (kelurahan.isEmpty) {
+      return Stream.value([]);
+    }
+    return _suratSubmissions
+        .where('kelurahan', isEqualTo: kelurahan)
+        .where('status', isEqualTo: 'PROSES LURAH')
+        .snapshots()
+        .map((snapshot) {
+      final list =
+          snapshot.docs.map(SuratSubmissionModel.fromFirestore).toList();
+      list.sort((a, b) {
+        final left = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final right = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return right.compareTo(left);
+      });
+      return list;
+    });
+  }
+
   Future<void> updateSubmissionStatus({
     required String submissionId,
     required String newStatus,

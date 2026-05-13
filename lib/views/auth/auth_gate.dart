@@ -5,7 +5,7 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../auth/login_view.dart';
 import '../main/main_view.dart';
 import '../dashboard/dashboard_super_admin_view.dart';
-import '../dashboard/dashboard_lurah_view.dart';
+import '../lurah/lurah_main_view.dart';
 import '../rt/rt_main_view.dart';
 import '../rw/rw_main_view.dart';
 
@@ -71,7 +71,7 @@ class _RoleRouterState extends State<_RoleRouter> {
           case 'super_admin':
             return const DashboardSuperAdminView();
           case 'lurah':
-            return const DashboardLurahView();
+            return const LurahMainView();
           case 'rt':
             return const RtMainView();
           case 'rw':

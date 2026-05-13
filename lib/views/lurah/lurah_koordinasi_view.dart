@@ -5,8 +5,8 @@ import '../../models/user_model.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class RwKoordinasiView extends StatelessWidget {
-  const RwKoordinasiView({super.key});
+class LurahKoordinasiView extends StatelessWidget {
+  const LurahKoordinasiView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class RwKoordinasiView extends StatelessWidget {
       body: Column(
         children: [
           _buildPremiumHeader(context, "Koordinasi Pengurus"),
-          Expanded(child: _TabDaftarRT()),
+          Expanded(child: _TabDaftarRW()),
         ],
       ),
     );
@@ -50,7 +50,7 @@ class RwKoordinasiView extends StatelessWidget {
   }
 }
 
-class _TabDaftarRT extends StatelessWidget {
+class _TabDaftarRW extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthViewModel>(
@@ -61,9 +61,8 @@ class _TabDaftarRT extends StatelessWidget {
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('users')
-              .where('role', isEqualTo: 'rt')
+              .where('role', isEqualTo: 'rw')
               .where('kelurahan', isEqualTo: user.kelurahan)
-              .where('rw', isEqualTo: user.rw)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -77,21 +76,21 @@ class _TabDaftarRT extends StatelessWidget {
                   children: [
                     Icon(Icons.people_outline, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
                     const SizedBox(height: 16),
-                    const Text("Belum ada ketua RT terdaftar\ndi wilayah RW ini.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    const Text("Belum ada ketua RW terdaftar\ndi wilayah Kelurahan ini.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 14)),
                   ],
                 ),
               );
             }
 
-            final rtList = docs.map((doc) => UserModel.fromFirestore(doc)).toList()
-              ..sort((a, b) => (a.rt ?? '').compareTo(b.rt ?? ''));
+            final rwList = docs.map((doc) => UserModel.fromFirestore(doc)).toList()
+              ..sort((a, b) => (a.rw ?? '').compareTo(b.rw ?? ''));
 
             return ListView.separated(
               padding: const EdgeInsets.all(20),
-              itemCount: rtList.length,
+              itemCount: rwList.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final rt = rtList[index];
+                final rwUser = rwList[index];
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -104,22 +103,22 @@ class _TabDaftarRT extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 24, backgroundColor: const Color(0xFFFEF2F2),
-                        backgroundImage: (rt.selfieUrl != null && rt.selfieUrl!.isNotEmpty) ? NetworkImage(rt.selfieUrl!) : null,
-                        child: (rt.selfieUrl == null || rt.selfieUrl!.isEmpty) ? const Icon(Icons.person, color: Color(0xFF8B0000)) : null,
+                        backgroundImage: (rwUser.selfieUrl != null && rwUser.selfieUrl!.isNotEmpty) ? NetworkImage(rwUser.selfieUrl!) : null,
+                        child: (rwUser.selfieUrl == null || rwUser.selfieUrl!.isEmpty) ? const Icon(Icons.person, color: Color(0xFF8B0000)) : null,
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("RT ${rt.rt ?? '-'}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF8B0000))),
-                            Text(rt.nama, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF1F2937))),
-                            Text(rt.nik, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            Text("RW ${rwUser.rw ?? '-'}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF8B0000))),
+                            Text(rwUser.nama, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF1F2937))),
+                            Text(rwUser.nik, style: const TextStyle(fontSize: 11, color: Colors.grey)),
                           ],
                         ),
                       ),
                       _buildActionBtn(Icons.chat_bubble_outline, () async {
-                        final phone = rt.nomorTelepon?.trim() ?? '';
+                        final phone = rwUser.nomorTelepon?.trim() ?? '';
                         if (phone.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Nomor telepon pengurus belum didaftarkan.")),

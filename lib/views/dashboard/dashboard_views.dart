@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../report/report_inbox_views.dart';
+import '../lurah/lurah_rw_list_view.dart';
+import '../rw/rw_residents_view.dart';
 
 class DashboardSuperAdminView extends StatelessWidget {
   const DashboardSuperAdminView({super.key});
@@ -50,6 +52,10 @@ class DashboardLurahView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authVM = context.watch<AuthViewModel>();
+    final user = authVM.currentUser;
+    final kelurahan = user?.kelurahan ?? '';
+
     return _AdminDashboardBase(
       role: 'lurah',
       roleLabel: 'Lurah',
@@ -61,6 +67,14 @@ class DashboardLurahView extends StatelessWidget {
           icon: Icons.people_rounded,
           label: 'Data Warga',
           subtitle: 'Lihat data seluruh warga',
+          onTap: (context) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LurahRwListView(kelurahan: kelurahan),
+              ),
+            );
+          },
         ),
         _MenuItem(
           icon: Icons.description_rounded,
@@ -130,6 +144,11 @@ class DashboardRwView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authVM = context.watch<AuthViewModel>();
+    final user = authVM.currentUser;
+    final kelurahan = user?.kelurahan ?? '';
+    final rw = user?.rw ?? '';
+
     return _AdminDashboardBase(
       role: 'rw',
       roleLabel: 'Ketua RW',
@@ -141,6 +160,14 @@ class DashboardRwView extends StatelessWidget {
           icon: Icons.people_rounded,
           label: 'Data RW',
           subtitle: 'Seluruh warga dalam RW',
+          onTap: (context) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RwResidentsView(kelurahan: kelurahan, rw: rw),
+              ),
+            );
+          },
         ),
         _MenuItem(
           icon: Icons.description_rounded,

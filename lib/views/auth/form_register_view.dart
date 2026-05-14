@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../services/media_service.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'photo_verif_view.dart';
+import '../../utils/top_notification.dart';
 
 class FormRegistView extends StatefulWidget {
   final Map<String, String> prefilledData;
@@ -782,13 +783,10 @@ class _FormRegistViewState extends State<FormRegistView> {
   }
 
   void _showSnackbar(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: const Color(0xFF8B0000),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+    TopNotification.show(
+      context: context,
+      message: msg,
+      isError: true,
     );
   }
 

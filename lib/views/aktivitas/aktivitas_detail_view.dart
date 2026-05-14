@@ -533,7 +533,18 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
                                   children: [
                                     const Icon(Icons.description, size: 20, color: Color(0xFF10B981)),
                                     const SizedBox(width: 8),
-                                    Text("Dokumen_${widget.title.replaceAll(' ', '_')}.pdf", style: const TextStyle(color: AktivitasDetailView.textDark, fontWeight: FontWeight.w600, fontSize: 13)),
+                                    Expanded(
+                                      child: Text(
+                                        "Dokumen_${widget.title.replaceAll(' ', '_')}.pdf",
+                                        style: const TextStyle(
+                                          color: AktivitasDetailView.textDark,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),

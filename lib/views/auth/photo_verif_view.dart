@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../services/media_service.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'email_verify_view.dart';
+import '../../utils/top_notification.dart';
 
 class PhotoVerifView extends StatefulWidget {
   /// uid dari proses registerStep1. Null jika view dibuka tanpa konteks registrasi.
@@ -98,12 +99,10 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
 
   Future<void> _lanjutkan() async {
     if (_selfieImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Silakan ambil foto selfie terlebih dahulu"),
-          backgroundColor: primaryRed,
-          behavior: SnackBarBehavior.floating,
-        ),
+      TopNotification.show(
+        context: context,
+        message: "Silakan ambil foto selfie terlebih dahulu",
+        isError: true,
       );
       return;
     }
@@ -120,13 +119,10 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
         MaterialPageRoute(builder: (_) => EmailVerifyView(email: email)),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authVM.errorMessage ?? 'Gagal upload selfie.'),
-          backgroundColor: primaryRed,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      TopNotification.show(
+        context: context,
+        message: authVM.errorMessage ?? 'Gagal upload selfie.',
+        isError: true,
       );
     }
   }

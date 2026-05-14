@@ -100,36 +100,40 @@ class _RtHomeViewState extends State<RtHomeView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _getGreeting(),
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.7,
-                                          ),
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Consumer<AuthViewModel>(
-                                        builder: (context, authVM, _) {
-                                          final name =
-                                              authVM.currentUser?.nama ??
-                                              "Bapak RT";
-                                          return Text(
-                                            name,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 0.5,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _getGreeting(),
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.7,
                                             ),
-                                          );
-                                        },
-                                      ),
-                                    ],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        Consumer<AuthViewModel>(
+                                          builder: (context, authVM, _) {
+                                            final name =
+                                                authVM.currentUser?.nama ??
+                                                "Bapak RT";
+                                            return Text(
+                                              name,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 0.5,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   // --- TOMBOL NOTIFIKASI ---
                                   Container(

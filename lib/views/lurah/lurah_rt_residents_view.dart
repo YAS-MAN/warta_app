@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
+import '../../utils/top_notification.dart';
 
 class LurahRtResidentsView extends StatefulWidget {
   final String kelurahan;
@@ -40,22 +41,18 @@ class _LurahRtResidentsViewState extends State<LurahRtResidentsView> {
         'role': newRole,
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Peran ${user.nama} berhasil diubah menjadi ${newRole.toUpperCase()}.'),
-            backgroundColor: const Color(0xFF16A34A),
-            behavior: SnackBarBehavior.floating,
-          ),
+        TopNotification.show(
+          context: context,
+          message: 'Peran ${user.nama} berhasil diubah menjadi ${newRole.toUpperCase()}.',
+          isSuccess: true,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal mengubah peran: $e'),
-            backgroundColor: const Color(0xFF8B0000),
-            behavior: SnackBarBehavior.floating,
-          ),
+        TopNotification.show(
+          context: context,
+          message: 'Gagal mengubah peran: $e',
+          isError: true,
         );
       }
     } finally {

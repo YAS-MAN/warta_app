@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'login_view.dart';
+import '../../utils/top_notification.dart';
 
 class EmailVerifyView extends StatefulWidget {
   final String email;
@@ -54,27 +55,16 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
       if (!mounted) return;
       if (!mounted) return;
       
-      // Tampilkan notifikasi sukses di ATAS menggunakan MaterialBanner
-      ScaffoldMessenger.of(context).showMaterialBanner(
-        MaterialBanner(
-          content: const Text(
-            '🎉 Email terverifikasi! Silakan login.',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: const Color(0xFF10B981),
-          actions: [
-            TextButton(
-              onPressed: () => ScaffoldMessenger.of(context).hideCurrentMaterialBanner(),
-              child: const Text('OK', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
+      // Tampilkan notifikasi sukses menggunakan TopNotification
+      TopNotification.show(
+        context: context,
+        message: '🎉 Email terverifikasi! Silakan login.',
+        isSuccess: true,
       );
 
-      // Tunggu sebentar agar user sempat baca banner sebelum pindah
+      // Tunggu sebentar agar user sempat baca notifikasi sebelum pindah
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
 
       Navigator.pushAndRemoveUntil(
         context,
@@ -82,13 +72,10 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
         (route) => false,
       );
     } else if (!silent) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Email belum diverifikasi. Silakan cek inbox atau folder spam Anda.'),
-          backgroundColor: primaryRed,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      TopNotification.show(
+        context: context,
+        message: 'Email belum diverifikasi. Silakan cek inbox atau folder spam Anda.',
+        isError: true,
       );
     }
   }
@@ -100,13 +87,10 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Email verifikasi telah dikirim ulang.'),
-          backgroundColor: const Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      TopNotification.show(
+        context: context,
+        message: 'Email verifikasi telah dikirim ulang.',
+        isSuccess: true,
       );
       // Start cooldown 60 seconds
       setState(() {
@@ -122,13 +106,10 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
         }
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authVM.errorMessage ?? 'Gagal mengirim ulang email.'),
-          backgroundColor: primaryRed,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      TopNotification.show(
+        context: context,
+        message: authVM.errorMessage ?? 'Gagal mengirim ulang email.',
+        isError: true,
       );
     }
   }

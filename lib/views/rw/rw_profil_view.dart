@@ -9,6 +9,7 @@ import '../auth/auth_gate.dart';
 import '../main/main_view.dart';
 import 'rw_residents_view.dart';
 import 'rw_approval_history_view.dart';
+import '../../utils/top_notification.dart';
 
 class RwProfilView extends StatefulWidget {
   const RwProfilView({super.key});
@@ -81,9 +82,9 @@ class _RwProfilViewState extends State<RwProfilView> {
     final bool success = await authVM.updateProfilePhoto(fromCamera: choice == 'camera');
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto profil berhasil diperbarui!'), backgroundColor: Color(0xFF16A34A), behavior: SnackBarBehavior.floating));
+      TopNotification.show(context: context, message: 'Foto profil berhasil diperbarui!', isSuccess: true);
     } else if (authVM.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(authVM.errorMessage!), backgroundColor: primaryRed, behavior: SnackBarBehavior.floating));
+      TopNotification.show(context: context, message: authVM.errorMessage!, isError: true);
     }
   }
 
@@ -161,10 +162,10 @@ class _RwProfilViewState extends State<RwProfilView> {
                         if (mounted) {
                           if (success) {
                             setState(() => _useBiometric = true);
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometrik berhasil diaktifkan!"), backgroundColor: Colors.green));
+                            TopNotification.show(context: context, message: "Biometrik berhasil diaktifkan!", isSuccess: true);
                           } else {
                             setState(() => _useBiometric = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(authVM.errorMessage ?? "Gagal mengatur biometrik"), backgroundColor: primaryRed));
+                            TopNotification.show(context: context, message: authVM.errorMessage ?? "Gagal mengatur biometrik", isError: true);
                           }
                         }
                       },
@@ -283,10 +284,10 @@ class _RwProfilViewState extends State<RwProfilView> {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'rwSignatureUrl': uploadedUrl});
       await authVM.loadCurrentUser(user.uid);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tanda tangan digital berhasil diperbarui.'), backgroundColor: Color(0xFF16A34A)));
+      TopNotification.show(context: context, message: 'Tanda tangan digital berhasil diperbarui.', isSuccess: true);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menyimpan tanda tangan digital.'), backgroundColor: primaryRed));
+      TopNotification.show(context: context, message: 'Gagal menyimpan tanda tangan digital.', isError: true);
     } finally {
       if (mounted) setState(() => _isUploadingSignature = false);
     }
@@ -312,29 +313,33 @@ class _RwProfilViewState extends State<RwProfilView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 32, height: 32,
-                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1)),
-                      child: ClipOval(
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1)),
+                        child: ClipOval(
+                          child: Column(
+                            children: [
+                              Expanded(child: Container(color: const Color(0xFFED1C24))),
+                              Expanded(child: Container(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(child: Container(color: const Color(0xFFED1C24))),
-                            Expanded(child: Container(color: Colors.white)),
+                            Text("REPUBLIK INDONESIA", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                            Text("KARTU TANDA PENDUDUK", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                           ],
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("REPUBLIK INDONESIA", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                        Text("KARTU TANDA PENGURUS", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -459,7 +464,7 @@ class _RwProfilViewState extends State<RwProfilView> {
 
                 Transform.translate(offset: const Offset(0, -40), child: _buildIdentityCard(authVM)),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 0),
 
                 // Sistem Administrasi
                 Padding(

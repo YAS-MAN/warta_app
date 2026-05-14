@@ -85,20 +85,25 @@ class _RwHomeViewState extends State<RwHomeView> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(_getGreeting(), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
-                              Consumer<AuthViewModel>(
-                                builder: (context, authVM, _) {
-                                  return Text(
-                                    authVM.currentUser?.nama ?? "Bapak RW",
-                                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                                  );
-                                },
-                              ),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(_getGreeting(), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
+                                Consumer<AuthViewModel>(
+                                  builder: (context, authVM, _) {
+                                    return Text(
+                                      authVM.currentUser?.nama ?? "Bapak RW",
+                                      style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(

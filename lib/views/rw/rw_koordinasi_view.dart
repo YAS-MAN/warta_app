@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/user_model.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../utils/top_notification.dart';
 
 class RwKoordinasiView extends StatelessWidget {
   const RwKoordinasiView({super.key});
@@ -121,8 +122,10 @@ class _TabDaftarRT extends StatelessWidget {
                       _buildActionBtn(Icons.chat_bubble_outline, () async {
                         final phone = rt.nomorTelepon?.trim() ?? '';
                         if (phone.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Nomor telepon pengurus belum didaftarkan.")),
+                          TopNotification.show(
+                            context: context,
+                            message: "Nomor telepon pengurus belum didaftarkan.",
+                            isError: true,
                           );
                           return;
                         }
@@ -135,8 +138,10 @@ class _TabDaftarRT extends StatelessWidget {
                           await launchUrl(uri, mode: LaunchMode.externalApplication);
                         } else {
                           if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Gagal membuka aplikasi WhatsApp.")),
+                          TopNotification.show(
+                            context: context,
+                            message: "Gagal membuka aplikasi WhatsApp.",
+                            isError: true,
                           );
                         }
                       }),

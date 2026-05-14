@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../auth/auth_gate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../utils/top_notification.dart';
 
 const Color primaryRed = Color(0xFF8B0000);
 const Color bgApp = Color(0xFFF8F9FA);
@@ -163,22 +164,17 @@ class _ProfilViewState extends State<ProfilView> {
                         if (mounted) {
                           if (success) {
                             setState(() => _useBiometric = true);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Biometrik berhasil diaktifkan!"),
-                                backgroundColor: Colors.green,
-                              ),
+                            TopNotification.show(
+                              context: context,
+                              message: "Biometrik berhasil diaktifkan!",
+                              isSuccess: true,
                             );
                           } else {
                             setState(() => _useBiometric = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  authVM.errorMessage ??
-                                      "Gagal mengatur biometrik",
-                                ),
-                                backgroundColor: primaryRed,
-                              ),
+                            TopNotification.show(
+                              context: context,
+                              message: authVM.errorMessage ?? "Gagal mengatur biometrik",
+                              isError: true,
                             );
                           }
                         }
@@ -298,20 +294,16 @@ class _ProfilViewState extends State<ProfilView> {
 
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Foto profil berhasil diperbarui!'),
-          backgroundColor: Color(0xFF16A34A),
-          behavior: SnackBarBehavior.floating,
-        ),
+      TopNotification.show(
+        context: context,
+        message: 'Foto profil berhasil diperbarui!',
+        isSuccess: true,
       );
     } else if (authVM.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authVM.errorMessage!),
-          backgroundColor: primaryRed,
-          behavior: SnackBarBehavior.floating,
-        ),
+      TopNotification.show(
+        context: context,
+        message: authVM.errorMessage!,
+        isError: true,
       );
     }
   }
@@ -732,68 +724,76 @@ class _ProfilViewState extends State<ProfilView> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 30,
-                                      height: 30,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.white,
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            child: Container(
-                                              decoration: const BoxDecoration(
-                                                color: Colors.red,
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                      top: Radius.circular(30),
-                                                    ),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Container(
-                                              decoration: const BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                      bottom: Radius.circular(
-                                                        30,
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Expanded(
+                                              child: Container(
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.red,
+                                                  borderRadius:
+                                                      BorderRadius.vertical(
+                                                        top: Radius.circular(30),
                                                       ),
-                                                    ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                            Expanded(
+                                              child: Container(
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.vertical(
+                                                        bottom: Radius.circular(
+                                                          30,
+                                                        ),
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "REPUBLIK INDONESIA",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                      const SizedBox(width: 8),
+                                      const Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "REPUBLIK INDONESIA",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              "KARTU TANDA PENDUDUK",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
                                         ),
-                                        Text(
-                                          "KARTU TANDA PENDUDUK",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(

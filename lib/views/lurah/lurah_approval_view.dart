@@ -69,8 +69,8 @@ class LurahApprovalView extends StatelessWidget {
             indicatorColor: Colors.white,
             indicatorWeight: 3,
             tabs: [
-              Tab(text: "Laporan Masuk"),
-              Tab(text: "Surat Kelurahan"),
+              Tab(text: "Laporan"),
+              Tab(text: "Surat"),
             ],
           ),
         ),
@@ -176,8 +176,13 @@ class _ReportCard extends StatelessWidget {
             child: OutlinedButton(
               onPressed: () async {
                 await reportService.resolveReport(report.id);
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Laporan selesai ditangani di tingkat Kelurahan."), backgroundColor: Color(0xFF2E7D32)));
+                if (context.mounted) {
+                  TopNotification.show(
+                    context: context,
+                    message: "Laporan selesai ditangani di tingkat Kelurahan.",
+                    isSuccess: true,
+                  );
+                }
               },
               style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF2E7D32), side: const BorderSide(color: Color(0xFF2E7D32)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               child: const Text("Selesai Ditangani"),

@@ -249,35 +249,41 @@ class _HomeViewState extends State<HomeView> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _getGreeting(),
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.7,
-                                      ),
-                                      fontSize: 14,
+                          // Header: Nama user dibungkus Expanded agar tidak overflow
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getGreeting(),
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.7,
                                     ),
+                                    fontSize: 14,
                                   ),
-                                  Consumer<AuthViewModel>(
-                                    builder: (context, authVM, child) {
-                                      final nama =
-                                          authVM.currentUser?.nama ??
-                                          "Budi Setiawan";
-                                      return Text(
-                                        nama,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
+                                ),
+                                Consumer<AuthViewModel>(
+                                  builder: (context, authVM, child) {
+                                    final nama =
+                                        authVM.currentUser?.nama ??
+                                        "Budi Setiawan";
+                                    return Text(
+                                      nama,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+
                               Row(
                                 children: [
                                   InkWell(
@@ -353,7 +359,7 @@ class _HomeViewState extends State<HomeView> {
                                         ),
                                       ),
                                       Text(
-                                        "Terverifikasi (E-KTP)",
+                                        "Terverifikasi\n(E-KTP)",
                                         style: TextStyle(
                                           color: Colors.black87,
                                           fontSize: 15,
@@ -693,13 +699,14 @@ class _HomeViewState extends State<HomeView> {
   // Tombol Menu Layanan Digital (PERUBAHAN: Diperbesar ukurannya)
   Widget _buildMenuBtn(IconData icon, String label) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 64, // Diperbesar dari 56 agar tidak kelihatan renggang
-          height: 64, // Diperbesar dari 56
+          width: 64,
+          height: 64,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(18), // Melengkung lebih halus
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFF3F4F6)),
             boxShadow: [
               BoxShadow(
@@ -713,9 +720,9 @@ class _HomeViewState extends State<HomeView> {
             icon,
             color: primaryRed,
             size: 28,
-          ), // Ikon juga diperbesar
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           label,
           style: const TextStyle(
@@ -723,6 +730,9 @@ class _HomeViewState extends State<HomeView> {
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -759,38 +769,38 @@ class _HomeViewState extends State<HomeView> {
         );
       },
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: iconColor, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: textDark,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    time,
-                    style: const TextStyle(color: textGray, fontSize: 10),
-                  ),
-                ],
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: iconBg,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
           ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: textDark,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  time,
+                  style: const TextStyle(color: textGray, fontSize: 10),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(

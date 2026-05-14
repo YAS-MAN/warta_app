@@ -280,25 +280,35 @@ class JadwalRondaView extends StatelessWidget {
             child: Icon(Icons.calendar_today, color: isCurrent ? Colors.white : textGray, size: 24),
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                hari,
-                style: TextStyle(fontWeight: FontWeight.bold, color: isCurrent ? primaryRed : textDark, fontSize: 14),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(Icons.access_time, size: 14, color: textGray),
-                  const SizedBox(width: 4),
-                  Text(
-                    jam,
-                    style: const TextStyle(color: textGray, fontSize: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  hari,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isCurrent ? primaryRed : textDark,
+                    fontSize: 14,
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, size: 14, color: textGray),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        jam,
+                        style: const TextStyle(color: textGray, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

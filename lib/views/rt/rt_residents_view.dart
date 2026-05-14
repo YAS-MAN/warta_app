@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
+import '../../utils/top_notification.dart';
 
 class RtResidentsView extends StatefulWidget {
   final String kelurahan;
@@ -258,19 +259,17 @@ class _RtResidentsViewState extends State<RtResidentsView> {
     try {
       await usersRef.doc(user.uid).delete();
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Data ${user.nama} berhasil dihapus.'),
-          backgroundColor: const Color(0xFF16A34A),
-        ),
+      TopNotification.show(
+        context: context,
+        message: 'Data ${user.nama} berhasil dihapus.',
+        isSuccess: true,
       );
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal menghapus data warga.'),
-          backgroundColor: Color(0xFF8B0000),
-        ),
+      TopNotification.show(
+        context: context,
+        message: 'Gagal menghapus data warga.',
+        isError: true,
       );
     }
   }

@@ -4,6 +4,7 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../report/report_inbox_views.dart';
 import '../lurah/lurah_rw_list_view.dart';
 import '../rw/rw_residents_view.dart';
+import '../../utils/top_notification.dart';
 
 class DashboardSuperAdminView extends StatelessWidget {
   const DashboardSuperAdminView({super.key});
@@ -471,13 +472,10 @@ class _MenuCard extends StatelessWidget {
             item.onTap!(context);
             return;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${item.label} — Segera hadir!'),
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: color,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+          TopNotification.show(
+            context: context,
+            message: '${item.label} — Segera hadir!',
+            isSuccess: true,
           );
         },
         child: Padding(

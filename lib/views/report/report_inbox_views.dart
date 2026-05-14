@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/report_model.dart';
 import '../../services/report_service.dart';
 import '../../viewmodels/auth_viewmodel.dart';
+import '../../utils/top_notification.dart';
 
 class RwReportInboxView extends StatefulWidget {
   const RwReportInboxView({super.key});
@@ -55,21 +56,19 @@ class _RwReportInboxViewState extends State<RwReportInboxView> {
                   onRightButtonTap: () async {
                     await _reportService.forwardReportToLurah(reports[index].id);
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Laporan diteruskan ke Lurah."),
-                        backgroundColor: primary,
-                      ),
+                    TopNotification.show(
+                      context: context,
+                      message: "Laporan diteruskan ke Lurah.",
+                      isSuccess: true,
                     );
                   },
                   onResolveTap: () async {
                     await _reportService.resolveReport(reports[index].id);
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Laporan diselesaikan di tingkat RW."),
-                        backgroundColor: Color(0xFF2E7D32),
-                      ),
+                    TopNotification.show(
+                      context: context,
+                      message: "Laporan diselesaikan di tingkat RW.",
+                      isSuccess: true,
                     );
                   },
                 ),
@@ -124,21 +123,19 @@ class _LurahReportInboxViewState extends State<LurahReportInboxView> {
               primaryColor: primary,
               rightButtonText: "Tindak Lanjut",
               onRightButtonTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Rincian tindak lanjut lurah dapat dikembangkan berikutnya."),
-                    backgroundColor: primary,
-                  ),
+                TopNotification.show(
+                  context: context,
+                  message: "Rincian tindak lanjut lurah dapat dikembangkan berikutnya.",
+                  isSuccess: true,
                 );
               },
               onResolveTap: () async {
                 await _reportService.resolveReport(reports[index].id);
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Laporan diselesaikan di tingkat kelurahan."),
-                    backgroundColor: Color(0xFF2E7D32),
-                  ),
+                TopNotification.show(
+                  context: context,
+                  message: "Laporan diselesaikan di tingkat kelurahan.",
+                  isSuccess: true,
                 );
               },
             ),

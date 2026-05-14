@@ -9,6 +9,7 @@ import '../auth/auth_gate.dart';
 import '../main/main_view.dart';
 import 'rt_residents_view.dart';
 import 'rt_approval_history_view.dart';
+import '../../utils/top_notification.dart';
 
 class RtProfilView extends StatefulWidget {
   const RtProfilView({super.key});
@@ -135,20 +136,16 @@ class _RtProfilViewState extends State<RtProfilView> {
 
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Foto profil berhasil diperbarui!'),
-          backgroundColor: Color(0xFF16A34A),
-          behavior: SnackBarBehavior.floating,
-        ),
+      TopNotification.show(
+        context: context,
+        message: 'Foto profil berhasil diperbarui!',
+        isSuccess: true,
       );
     } else if (authVM.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authVM.errorMessage!),
-          backgroundColor: primaryRed,
-          behavior: SnackBarBehavior.floating,
-        ),
+      TopNotification.show(
+        context: context,
+        message: authVM.errorMessage!,
+        isError: true,
       );
     }
   }
@@ -315,22 +312,17 @@ class _RtProfilViewState extends State<RtProfilView> {
                         if (mounted) {
                           if (success) {
                             setState(() => _useBiometric = true);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Biometrik berhasil diaktifkan!"),
-                                backgroundColor: Colors.green,
-                              ),
+                            TopNotification.show(
+                              context: context,
+                              message: "Biometrik berhasil diaktifkan!",
+                              isSuccess: true,
                             );
                           } else {
                             setState(() => _useBiometric = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  authVM.errorMessage ??
-                                      "Gagal mengatur biometrik",
-                                ),
-                                backgroundColor: Color(0xFF8B0000),
-                              ),
+                            TopNotification.show(
+                              context: context,
+                              message: authVM.errorMessage ?? "Gagal mengatur biometrik",
+                              isError: true,
                             );
                           }
                         }
@@ -439,19 +431,17 @@ class _RtProfilViewState extends State<RtProfilView> {
       );
       await authVM.loadCurrentUser(user.uid);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tanda tangan digital berhasil diperbarui.'),
-          backgroundColor: Color(0xFF16A34A),
-        ),
+      TopNotification.show(
+        context: context,
+        message: 'Tanda tangan digital berhasil diperbarui.',
+        isSuccess: true,
       );
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal menyimpan tanda tangan digital.'),
-          backgroundColor: Color(0xFF8B0000),
-        ),
+      TopNotification.show(
+        context: context,
+        message: 'Gagal menyimpan tanda tangan digital.',
+        isError: true,
       );
     } finally {
       if (mounted) setState(() => _isUploadingSignature = false);
@@ -488,63 +478,71 @@ class _RtProfilViewState extends State<RtProfilView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(30),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 30,
+                        height: 30,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(30),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              decoration: const BoxDecoration(
+                            Expanded(
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.vertical(
+                                    bottom: Radius.circular(30),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "REPUBLIK INDONESIA",
+                              style: TextStyle(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.vertical(
-                                  bottom: Radius.circular(30),
-                                ),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                            Text(
+                              "KARTU TANDA PENDUDUK",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "REPUBLIK INDONESIA",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "KARTU TANDA PENGURUS",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -672,10 +670,10 @@ class _RtProfilViewState extends State<RtProfilView> {
             child: Column(
               children: [
                 Container(
-                  height: 220,
+                  height: 180,
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
                       colors: [
                         Color.fromARGB(255, 83, 0, 0),
                         Color(0xFF8B0000),
@@ -683,16 +681,9 @@ class _RtProfilViewState extends State<RtProfilView> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: const BorderRadius.vertical(
+                    borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(40),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
                   ),
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(
@@ -723,34 +714,10 @@ class _RtProfilViewState extends State<RtProfilView> {
                         Padding(
                           padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Expanded(
-                                child: Text(
-                                  "Profil Pengurus",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                onTap: () => _showEditPhotoSheet(authVM),
-                                borderRadius: BorderRadius.circular(18),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.18),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                ),
-                              ),
+                              const Text("Profil Pengurus", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                              IconButton(onPressed: () => _showEditPhotoSheet(authVM), icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20)),
                             ],
                           ),
                         ),
@@ -759,10 +726,10 @@ class _RtProfilViewState extends State<RtProfilView> {
                   ),
                 ),
                 Transform.translate(
-                  offset: const Offset(0, -20),
+                  offset: const Offset(0, -40),
                   child: _buildIdentityCard(authVM),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 0), // Mengurangi jarak ke menu
 
                 // --- MENU SETTINGS PENGURUS ---
                 Padding(

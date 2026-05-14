@@ -85,34 +85,41 @@ class _LurahHomeViewState extends State<LurahHomeView> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(_getGreeting(), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
-                              Consumer<AuthViewModel>(
-                                builder: (context, authVM, _) {
-                                  final user = authVM.currentUser;
-                                  final kel = user?.kelurahan ?? "";
-                                  return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        user?.nama ?? "Bapak Lurah",
-                                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                                      ),
-                                      if (kel.isNotEmpty) ...[
-                                        const SizedBox(height: 2),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(_getGreeting(), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
+                                Consumer<AuthViewModel>(
+                                  builder: (context, authVM, _) {
+                                    final user = authVM.currentUser;
+                                    final kel = user?.kelurahan ?? "";
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
                                         Text(
-                                          "Kelurahan ${kel.toUpperCase()}",
-                                          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w500),
+                                          user?.nama ?? "Bapak Lurah",
+                                          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
+                                        if (kel.isNotEmpty) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            "Kelurahan ${kel.toUpperCase()}",
+                                            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w500),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
                                       ],
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(

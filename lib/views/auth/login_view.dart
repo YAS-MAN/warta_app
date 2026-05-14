@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../auth/register_view.dart';
+import '../../utils/top_notification.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -85,14 +86,12 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
-  void _showSnackbar(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: primaryRed,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+  void _showSnackbar(String msg, {bool isSuccess = false}) {
+    TopNotification.show(
+      context: context,
+      message: msg,
+      isSuccess: isSuccess,
+      isError: !isSuccess,
     );
   }
 
@@ -178,8 +177,11 @@ class _LoginViewState extends State<LoginView> {
                             : () async {
                                 final email = resetEmailCtrl.text.trim();
                                 if (email.isEmpty) {
-                                  ScaffoldMessenger.of(ctx).showSnackBar(
-                                      const SnackBar(content: Text("Isi email terlebih dahulu")));
+                                  TopNotification.show(
+                                    context: ctx,
+                                    message: "Isi email terlebih dahulu",
+                                    isError: true,
+                                  );
                                   return;
                                 }
 
@@ -187,7 +189,7 @@ class _LoginViewState extends State<LoginView> {
                                 if (ctx.mounted) {
                                   Navigator.pop(ctx);
                                   if (success) {
-                                    _showSnackbar("Email reset password berhasil dikirim.");
+                                    _showSnackbar("Email reset password berhasil dikirim.", isSuccess: true);
                                   } else {
                                     _showSnackbar(authVM.errorMessage ?? "Gagal reset.");
                                   }

@@ -277,7 +277,7 @@ class _AktivitasViewState extends State<AktivitasView> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
           color: isActive ? Colors.red.withValues(alpha: 0.9) : Colors.white,
           gradient: isActive

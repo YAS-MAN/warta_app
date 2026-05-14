@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/berita_model.dart';
+import '../../utils/top_notification.dart';
 
 class BeritaDetailView extends StatelessWidget {
   final BeritaModel berita;
@@ -158,8 +159,10 @@ class BeritaDetailView extends StatelessWidget {
                           final Uri url = Uri.parse(berita.sourceUrl!);
                           if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Tidak dapat membuka tautan')),
+                              TopNotification.show(
+                                context: context,
+                                message: 'Tidak dapat membuka tautan',
+                                isError: true,
                               );
                             }
                           }

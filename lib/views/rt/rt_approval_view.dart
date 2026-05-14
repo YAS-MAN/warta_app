@@ -84,9 +84,9 @@ class RtApprovalView extends StatelessWidget {
             indicatorColor: Colors.white,
             indicatorWeight: 3,
             tabs: [
-              Tab(text: "Iuran Warga"),
-              Tab(text: "Surat Pengantar"),
-              Tab(text: "Laporan Warga"),
+              Tab(text: "Iuran"),
+              Tab(text: "Surat"),
+              Tab(text: "Laporan"),
             ],
           ),
         ),
@@ -340,15 +340,14 @@ class _TabIuranWargaApprovalState extends State<_TabIuranWargaApproval> {
                                 tahun: iuran.tahun,
                                 uidRt: user.uid,
                               );
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      s ? "Iuran Lunas!" : "Gagal menyimpan.",
-                                    ),
-                                  ),
-                                );
-                              }
+                                if (context.mounted) {
+                                  TopNotification.show(
+                                    context: context,
+                                    message: s ? "Iuran Lunas!" : "Gagal menyimpan.",
+                                    isSuccess: s,
+                                    isError: !s,
+                                  );
+                                }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF8B0000),
@@ -375,15 +374,13 @@ class _TabIuranWargaApprovalState extends State<_TabIuranWargaApproval> {
                                 tahun: iuran.tahun,
                                 uidRt: user.uid,
                               );
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      s ? "Iuran ditolak." : "Gagal menyimpan.",
-                                    ),
-                                  ),
-                                );
-                              }
+                                if (context.mounted) {
+                                  TopNotification.show(
+                                    context: context,
+                                    message: s ? "Iuran ditolak." : "Gagal menyimpan.",
+                                    isError: true,
+                                  );
+                                }
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.red,

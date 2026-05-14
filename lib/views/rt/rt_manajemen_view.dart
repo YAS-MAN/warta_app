@@ -523,12 +523,10 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
   String? _loadError;
 
   void _showComingSoon(BuildContext context, String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Aksi detail $title belum tersedia di iterasi ini."),
-        backgroundColor: const Color(0xFF8B0000),
-        behavior: SnackBarBehavior.floating,
-      ),
+    TopNotification.show(
+      context: context,
+      message: "Aksi detail $title belum tersedia di iterasi ini.",
+      isError: true,
     );
   }
 
@@ -646,11 +644,10 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                         _enabledOverride = prev;
                         _enabledCached = prev;
                       });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Gagal mengubah status ronda: $e"),
-                          backgroundColor: const Color(0xFF8B0000),
-                        ),
+                      TopNotification.show(
+                        context: context,
+                        message: "Gagal mengubah status ronda: $e",
+                        isError: true,
                       );
                     }
                   },
@@ -925,12 +922,13 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                       _slotAssignments[i] = null;
                     }
                   });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Jadwal ronda berhasil disimpan."),
-                      backgroundColor: Color(0xFF8B0000),
-                    ),
-                  );
+                  if (mounted) {
+                    TopNotification.show(
+                      context: context,
+                      message: "Jadwal ronda berhasil disimpan.",
+                      isSuccess: true,
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B0000),
@@ -1008,8 +1006,10 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                           }
                           _isRecurring = false;
                         });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Data dipindahkan ke form atas untuk diedit."), backgroundColor: Colors.blue),
+                        TopNotification.show(
+                          context: context,
+                          message: "Data dipindahkan ke form atas untuk diedit.",
+                          isSuccess: true,
                         );
                       },
                     ),
@@ -1035,9 +1035,13 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                         );
                         if (confirm == true) {
                           await _rondaService.deleteSchedule(item.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Jadwal dihapus."), backgroundColor: Colors.red),
-                          );
+                          if (context.mounted) {
+                            TopNotification.show(
+                              context: context,
+                              message: "Jadwal dihapus.",
+                              isError: true,
+                            );
+                          }
                         }
                       },
                     ),

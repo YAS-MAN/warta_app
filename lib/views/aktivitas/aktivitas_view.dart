@@ -176,9 +176,35 @@ class _AktivitasViewState extends State<AktivitasView> {
                     return const Center(child: Text("Belum ada aktivitas."));
                   }
 
-                  // Filter logic based on active tab
+                  // 1. Ambil semua data
                   List<AktivitasModel> allItems = snapshot.data!;
-                  List<AktivitasModel> filteredItems = allItems.where((item) {
+                  
+                  // 2. Deduplikasi: Jika ada beberapa dokumen dengan referenceId yang sama,
+                  // ambil yang paling baru saja (list sudah terurut descending).
+                  final seenRefs = <String>{};
+                  final seenIuranTitles = <String>{};
+                  final uniqueItems = allItems.where((item) {
+                    final refId = item.referenceId;
+                    
+                    // Deduplikasi berdasarkan referenceId jika ada
+                    if (refId != null && refId.isNotEmpty) {
+                      if (seenRefs.contains(refId)) return false;
+                      seenRefs.add(refId);
+                      return true;
+                    }
+                    
+                    // Fallback khusus untuk data Iuran lama yang belum punya referenceId
+                    if (item.activityType == 'iuran') {
+                      if (seenIuranTitles.contains(item.title)) return false;
+                      seenIuranTitles.add(item.title);
+                      return true;
+                    }
+                    
+                    return true;
+                  }).toList();
+
+                  // 3. Filter berdasarkan tab yang aktif
+                  List<AktivitasModel> filteredItems = uniqueItems.where((item) {
                     final status = item.status.toUpperCase();
                     if (_activeTabIndex == 0) return true; // Semua
                     
@@ -214,9 +240,10 @@ class _AktivitasViewState extends State<AktivitasView> {
                        final currentUser = authVM.currentUser;
                        String roleLabel = 'RT';
                        final statusUpper = item.status.toUpperCase();
-                       if (statusUpper.contains("RW")) {
+                       final titleUpper = item.title.toUpperCase();
+                       if (statusUpper.contains("RW") || titleUpper.contains("RW")) {
                          roleLabel = 'RW';
-                       } else if (statusUpper.contains("LURAH")) {
+                       } else if (statusUpper.contains("LURAH") || titleUpper.contains("LURAH")) {
                          roleLabel = 'Lurah';
                        } else {
                          roleLabel = 'RT';

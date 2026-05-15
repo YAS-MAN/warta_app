@@ -161,6 +161,7 @@ class AktivitasService {
     required String referenceId,
     required String newStatus,
     required String newSubtitle,
+    String? newTitle,
   }) async {
     if (userId.isEmpty || referenceId.isEmpty) return;
 
@@ -173,11 +174,14 @@ class AktivitasService {
 
     // Update semua aktivitas yang cocok (biasanya hanya 1)
     for (final doc in snapshot.docs) {
-      await _activities.doc(doc.id).update({
+      final Map<String, dynamic> updateData = {
         'status': newStatus,
         'subtitle': newSubtitle,
         'updatedAt': FieldValue.serverTimestamp(),
-      });
+      };
+      if (newTitle != null) updateData['title'] = newTitle;
+
+      await _activities.doc(doc.id).update(updateData);
     }
   }
 }

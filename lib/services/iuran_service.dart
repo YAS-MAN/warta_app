@@ -65,7 +65,7 @@ class IuranService {
   /// Mengirim bukti bayar warga (membuat riwayat pending)
   Future<bool> bayarIuran(IuranModel iuran) async {
     try {
-      await _firestore.collection(_historyCollection).add(iuran.toMap());
+      final docRef = await _firestore.collection(_historyCollection).add(iuran.toMap());
       
       await _aktivitasService.addActivity(
         userId: iuran.uidWarga,
@@ -73,6 +73,7 @@ class IuranService {
         subtitle: 'Bukti terkirim. Menunggu konfirmasi RT.',
         status: 'PROSES',
         activityType: 'iuran',
+        referenceId: docRef.id,
       );
 
       return true;
@@ -158,13 +159,12 @@ class IuranService {
       String statusStr = newStatus == 1 ? 'BERHASIL' : 'DITOLAK';
       String subtitleWarga = newStatus == 1 ? 'Pembayaran lunas dikonfirmasi RT.' : 'Bukti pembayaran ditolak RT.';
 
-      // Aktivitas Warga
-      await _aktivitasService.addActivity(
+      // Aktivitas Warga (Update status yang sudah ada)
+      await _aktivitasService.updateActivityByReference(
         userId: uidWarga,
-        title: 'Iuran $bulan $tahun',
-        subtitle: subtitleWarga,
-        status: statusStr,
-        activityType: 'iuran',
+        referenceId: idTagihan,
+        newStatus: statusStr,
+        newSubtitle: subtitleWarga,
       );
 
       // Aktivitas Pengurus RT

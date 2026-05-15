@@ -110,13 +110,12 @@ class ReportService {
     });
     final reporterUid = data?['reporterUid'] as String?;
     if (reporterUid != null && reporterUid.isNotEmpty) {
-      await _aktivitasService.addActivity(
+      await _aktivitasService.updateActivityByReference(
         userId: reporterUid,
-        title: "Laporan Diteruskan ke RW",
-        subtitle: data?['title'] ?? 'Laporan warga',
-        status: "PROSES",
-        activityType: "report",
         referenceId: reportId,
+        newStatus: "PROSES",
+        newTitle: "Laporan Diteruskan ke RW",
+        newSubtitle: "Sedang ditinjau oleh Ketua RW setempat.",
       );
     }
   }
@@ -131,13 +130,12 @@ class ReportService {
     });
     final reporterUid = data?['reporterUid'] as String?;
     if (reporterUid != null && reporterUid.isNotEmpty) {
-      await _aktivitasService.addActivity(
+      await _aktivitasService.updateActivityByReference(
         userId: reporterUid,
-        title: "Laporan Diteruskan ke Lurah",
-        subtitle: data?['title'] ?? 'Laporan warga',
-        status: "PROSES",
-        activityType: "report",
         referenceId: reportId,
+        newStatus: "PROSES",
+        newTitle: "Laporan Diteruskan ke Lurah",
+        newSubtitle: "Sedang ditinjau oleh pihak Kelurahan.",
       );
     }
   }
@@ -151,13 +149,12 @@ class ReportService {
     });
     final reporterUid = data?['reporterUid'] as String?;
     if (reporterUid != null && reporterUid.isNotEmpty) {
-      await _aktivitasService.addActivity(
+      await _aktivitasService.updateActivityByReference(
         userId: reporterUid,
-        title: "Laporan Selesai Ditangani",
-        subtitle: data?['title'] ?? 'Laporan warga',
-        status: "SELESAI",
-        activityType: "report",
         referenceId: reportId,
+        newStatus: "SELESAI",
+        newTitle: "Laporan Selesai Ditangani",
+        newSubtitle: "Ketua RT telah menandai laporan ini sebagai selesai.",
       );
     }
   }

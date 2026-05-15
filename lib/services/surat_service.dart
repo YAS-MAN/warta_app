@@ -163,6 +163,9 @@ class SuratService {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       actedByUid: data['actedByUid'] as String?,
+      rtUid: data['rtUid'] as String?,
+      rwUid: data['rwUid'] as String?,
+      lurahUid: data['lurahUid'] as String?,
     );
   }
 
@@ -256,6 +259,16 @@ class SuratService {
       'updatedAt': FieldValue.serverTimestamp(),
       'actedByUid': actedByUid,
     };
+
+    // Track specific signatures
+    if (normalizedStatus == 'PROSES RW') {
+      updateData['rtUid'] = actedByUid;
+    } else if (normalizedStatus == 'PROSES LURAH') {
+      updateData['rwUid'] = actedByUid;
+    } else if (normalizedStatus == 'BERHASIL') {
+      updateData['lurahUid'] = actedByUid;
+    }
+
     if (rejectionReason != null && rejectionReason.isNotEmpty) {
       updateData['rejectionReason'] = rejectionReason;
     }
@@ -657,5 +670,25 @@ class SuratService {
         "Menerangkan bahwa individu di atas memberikan kuasa penuh atas pengelolaan properti/tanah kepada pihak yang tercantum.",
       ),
     ];
+  }
+
+  Stream<List<SuratSubmissionModel>> streamHistoryForRt({
+    required String kelurahan,
+    required String rw,
+    required String rt,
+  }) {
+    if (kelurahan.isEmpty || rw.isEmpty || rt.isEmpty) return Stream.value([]);
+    return _suratSubmissions
+        .where('kelurahan', isEqualTo: kelurahan)
+        .where('rw', isEqualTo: rw)
+        .where('rt', isEqualTo: rt)
+        .orderBy('updatedAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => SuratSubmissionModel.fromFirestore(doc))
+          .where((s) => s.status != 'PROSES')
+          .toList();
+    });
   }
 }

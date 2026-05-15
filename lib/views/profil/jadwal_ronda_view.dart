@@ -147,10 +147,14 @@ class JadwalRondaView extends StatelessWidget {
                         final hari = _weekdayName(jadwal.tanggal.weekday);
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12.0),
-                          child: _buildJadwalCard(
-                            "$hari, ${_formatDate(jadwal.tanggal)}",
-                            "${jadwal.lokasi} • ${jadwal.anggota.join(', ')}",
-                            index == 0,
+                          child: InkWell(
+                            onTap: () => _showDetailRonda(context, hari, _formatDate(jadwal.tanggal), jadwal),
+                            borderRadius: BorderRadius.circular(16),
+                            child: _buildJadwalCard(
+                              "$hari, ${_formatDate(jadwal.tanggal)}",
+                              "${jadwal.lokasi} • ${jadwal.anggota.join(', ')}",
+                              index == 0,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -159,6 +163,49 @@ class JadwalRondaView extends StatelessWidget {
                 );
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDetailRonda(BuildContext context, String hari, String tanggal, RondaScheduleModel jadwal) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Column(
+          children: [
+            const Icon(Icons.security, color: primaryRed, size: 48),
+            const SizedBox(height: 16),
+            Text("$hari, $tanggal", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Lokasi Kumpul:", style: TextStyle(fontWeight: FontWeight.bold, color: textGray)),
+            Text(jadwal.lokasi, style: const TextStyle(fontSize: 16, color: textDark)),
+            const SizedBox(height: 16),
+            const Text("Petugas Ronda:", style: TextStyle(fontWeight: FontWeight.bold, color: textGray)),
+            const SizedBox(height: 8),
+            ...jadwal.anggota.map((nama) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.person_outline, size: 16, color: primaryRed),
+                  const SizedBox(width: 8),
+                  Text(nama, style: const TextStyle(fontSize: 14)),
+                ],
+              ),
+            )),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Tutup", style: TextStyle(color: primaryRed, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

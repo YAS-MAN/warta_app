@@ -54,9 +54,16 @@ class ReportService {
         .where('reporterRw', isEqualTo: rw)
         .where('currentLevel', isEqualTo: 'rt')
         .where('status', whereIn: ['submitted', 'in_review', 'escalated'])
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map(ReportModel.fromFirestore).toList());
+        .map((snapshot) {
+      final list = snapshot.docs.map(ReportModel.fromFirestore).toList();
+      list.sort((a, b) {
+        final left = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final right = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return right.compareTo(left);
+      });
+      return list;
+    });
   }
 
   Stream<List<ReportModel>> streamReportsForRw({required String rw}) {
@@ -65,18 +72,32 @@ class ReportService {
         .where('reporterRw', isEqualTo: rw)
         .where('currentLevel', isEqualTo: 'rw')
         .where('status', whereIn: ['submitted', 'in_review', 'escalated'])
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map(ReportModel.fromFirestore).toList());
+        .map((snapshot) {
+      final list = snapshot.docs.map(ReportModel.fromFirestore).toList();
+      list.sort((a, b) {
+        final left = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final right = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return right.compareTo(left);
+      });
+      return list;
+    });
   }
 
   Stream<List<ReportModel>> streamReportsForLurah() {
     return _reports
         .where('currentLevel', isEqualTo: 'lurah')
         .where('status', whereIn: ['submitted', 'in_review', 'escalated'])
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map(ReportModel.fromFirestore).toList());
+        .map((snapshot) {
+      final list = snapshot.docs.map(ReportModel.fromFirestore).toList();
+      list.sort((a, b) {
+        final left = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final right = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return right.compareTo(left);
+      });
+      return list;
+    });
   }
 
   Future<void> forwardReportToRw(String reportId) async {
@@ -139,6 +160,26 @@ class ReportService {
         referenceId: reportId,
       );
     }
+  }
+
+  Stream<List<ReportModel>> streamHistoryForRt({
+    required String rt,
+    required String rw,
+  }) {
+    if (rt.isEmpty || rw.isEmpty) return Stream.value([]);
+    // Riwayat adalah laporan yang SUDAH diteruskan (currentLevel != rt) ATAU sudah resolved
+    return _reports
+        .where('reporterRt', isEqualTo: rt)
+        .where('reporterRw', isEqualTo: rw)
+        .orderBy('updatedAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          // Filter di client side karena Firestore query limitations
+          return snapshot.docs
+              .map(ReportModel.fromFirestore)
+              .where((r) => r.currentLevel != 'rt' || r.status == 'resolved' || r.status == 'rejected')
+              .toList();
+        });
   }
 }
 

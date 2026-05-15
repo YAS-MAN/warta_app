@@ -107,7 +107,7 @@ class _LurahRwListViewState extends State<LurahRwListView> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFE5E7EB)),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
         ),
         child: Row(
           children: [
@@ -154,7 +154,7 @@ class _LurahRwListViewState extends State<LurahRwListView> {
                   children: [
                     Text(title, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
                     const SizedBox(height: 2),
-                    Text(widget.kelurahan.toUpperCase(), style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w500)),
+                    Text(widget.kelurahan.toUpperCase(), style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),

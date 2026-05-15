@@ -167,7 +167,7 @@ class _BeritaViewState extends State<BeritaView> {
                       color: (_dataSource == 'live'
                               ? const Color(0xFF8B0000)
                               : Colors.orange)
-                          .withValues(alpha: 0.1),
+                          .withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -326,7 +326,7 @@ class _BeritaViewState extends State<BeritaView> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B0000).withValues(alpha: 0.08),
+                            color: const Color(0xFF8B0000).withOpacity(0.08),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -354,7 +354,7 @@ class _BeritaViewState extends State<BeritaView> {
                           heroArticle.content,
                           style: TextStyle(
                             fontSize: 14,
-                            color: const Color(0xFF1F2937).withValues(alpha: 0.8),
+                            color: const Color(0xFF1F2937).withOpacity(0.8),
                             height: 1.5,
                           ),
                         ),

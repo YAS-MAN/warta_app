@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/iuran_model.dart';
-import 'auth_service.dart';
 import 'aktivitas_service.dart';
 
 class IuranService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthService _authService = AuthService();
   final AktivitasService _aktivitasService = AktivitasService();
 
   // Koleksi nama

@@ -147,7 +147,7 @@ class _RwRtResidentsViewState extends State<RwRtResidentsView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(title, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-                    Text("Ketua: ${widget.rtName}", style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12)),
+                    Text("Ketua: ${widget.rtName}", style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12)),
                   ],
                 ),
               ),

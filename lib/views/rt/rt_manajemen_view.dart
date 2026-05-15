@@ -17,8 +17,6 @@ class RtManajemenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryRed = Color(0xFF8B0000);
-
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -26,7 +24,7 @@ class RtManajemenView extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent, // Menggunakan background dari flexibleSpace
           elevation: 8,
-          shadowColor: Colors.black.withValues(alpha: 0.5),
+          shadowColor: Colors.black.withOpacity(0.5),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(
               bottom: Radius.circular(30),
@@ -61,7 +59,7 @@ class RtManajemenView extends StatelessWidget {
                         image: const AssetImage('assets/images/warta_logo.png'),
                         width: 160,
                         height: 160,
-                        color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.15),
+                        color: const Color.fromARGB(255, 58, 1, 1).withOpacity(0.15),
                       ),
                     ),
                   ),
@@ -120,14 +118,6 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
     _bankNameController.dispose();
     _accNumController.dispose();
     super.dispose();
-  }
-
-  void _pickQrImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() => _newQrFile = pickedFile);
-    }
   }
 
   void _showEditSettingDialog(
@@ -360,7 +350,7 @@ class _TabIuranWargaState extends State<_TabIuranWarga> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.grey.withValues(alpha: 0.2),
+                      color: Colors.grey.withOpacity(0.2),
                     ),
                   ),
                   child: Column(
@@ -602,7 +592,7 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                       color: const Color(0xFFFFF7ED),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: const Color(0xFFF97316).withValues(alpha: 0.35),
+                        color: const Color(0xFFF97316).withOpacity(0.35),
                       ),
                     ),
                     child: Text(
@@ -712,12 +702,12 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
       ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -740,11 +730,11 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
+                  borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
+                  borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
                 ),
               ),
               onChanged: (val) {
@@ -846,7 +836,7 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
                           border: Border.all(
                             color: const Color(
                               0xFF8B0000,
-                            ).withValues(alpha: 0.2),
+                            ).withOpacity(0.2),
                           ),
                         ),
                         child: Row(
@@ -951,7 +941,7 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
         color: const Color(0xFFFEF2F2),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: const Color(0xFF8B0000).withValues(alpha: 0.25),
+          color: const Color(0xFF8B0000).withOpacity(0.25),
         ),
       ),
       child: Text(
@@ -976,7 +966,7 @@ class _TabJadwalRondaState extends State<_TabJadwalRonda> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
+          border: Border.all(color: Colors.grey.withOpacity(0.15)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

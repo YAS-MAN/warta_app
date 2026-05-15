@@ -42,6 +42,8 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
   String _fallbackContent = "";
   bool _loadingSubmission = true;
   Uint8List? _rtSignatureBytes;
+  Uint8List? _rwSignatureBytes;
+  Uint8List? _lurahSignatureBytes;
 
   @override
   void initState() {
@@ -53,22 +55,31 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
     if (widget.referenceId != null && widget.referenceId!.isNotEmpty && widget.activityType == 'surat') {
       final sub = await SuratService().getSubmissionById(widget.referenceId!);
       
-      // Ambil TTD RT jika sudah diproses
-      if (sub != null && sub.actedByUid != null && sub.actedByUid!.isNotEmpty) {
-        try {
-          final rtDoc = await FirebaseFirestore.instance.collection('users').doc(sub.actedByUid).get();
-          if (rtDoc.exists) {
-            final sigUrl = rtDoc.data()?['rtSignatureUrl'] as String?;
-            if (sigUrl != null && sigUrl.isNotEmpty) {
-              final response = await http.get(Uri.parse(sigUrl));
-              if (response.statusCode == 200) {
-                _rtSignatureBytes = response.bodyBytes;
-              }
-            }
-          }
-        } catch (e) {
-          debugPrint("Gagal mengambil TTD RT: $e");
+      // 1. Ambil TTD RT
+      final rtUid = sub?.rtUid;
+      if (rtUid != null && rtUid.isNotEmpty) {
+        _rtSignatureBytes = await _fetchSignature(rtUid, 'rtSignatureUrl');
+      } else if (sub?.status == 'PROSES RW' || sub?.status == 'PROSES LURAH' || sub?.status == 'BERHASIL') {
+        // Fallback hanya jika status sudah melewati RT
+        final fallbackUid = sub?.actedByUid;
+        if (fallbackUid != null) {
+          _rtSignatureBytes = await _fetchSignature(fallbackUid, 'rtSignatureUrl');
         }
+      }
+
+      // 2. Ambil TTD RW
+      final rwUid = sub?.rwUid;
+      if (rwUid != null && rwUid.isNotEmpty) {
+        _rwSignatureBytes = await _fetchSignature(rwUid, 'rwSignatureUrl');
+      } else if (sub?.status == 'PROSES LURAH' || sub?.status == 'BERHASIL') {
+        // Fallback jika status sudah melewati RW tapi rwUid belum tercatat (data lama)
+        // Kita tidak fallback ke actedByUid karena actedByUid mungkin Lurah
+      }
+
+      // 3. Ambil TTD Lurah
+      final lurahUid = sub?.lurahUid;
+      if (lurahUid != null && lurahUid.isNotEmpty) {
+        _lurahSignatureBytes = await _fetchSignature(lurahUid, 'lurahSignatureUrl');
       }
 
       String fallback = "";
@@ -96,6 +107,24 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
         });
       }
     }
+  }
+
+  Future<Uint8List?> _fetchSignature(String uid, String fieldName) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        final sigUrl = doc.data()?[fieldName] as String?;
+        if (sigUrl != null && sigUrl.isNotEmpty) {
+          final response = await http.get(Uri.parse(sigUrl));
+          if (response.statusCode == 200) {
+            return response.bodyBytes;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Gagal mengambil TTD ($fieldName) untuk $uid: $e");
+    }
+    return null;
   }
 
   Future<void> _downloadPdf() async {
@@ -235,22 +264,29 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
                         ),
                         pw.SizedBox(height: 12),
                         // Penanda TTD Elektronik
-                        pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: pw.BoxDecoration(
-                            color: PdfColors.blue50,
-                            border: pw.Border.all(color: PdfColors.blue300, width: 0.5),
-                            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
-                          ),
-                          child: pw.Text(
-                            '[ e-TTD RW ]',
-                            style: pw.TextStyle(
-                              color: PdfColors.blue800,
-                              fontSize: 9,
-                              fontWeight: pw.FontWeight.bold,
+                        if (_rwSignatureBytes != null)
+                          pw.Container(
+                            height: 40,
+                            width: 80,
+                            child: pw.Image(pw.MemoryImage(_rwSignatureBytes!)),
+                          )
+                        else
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: pw.BoxDecoration(
+                              color: PdfColors.blue50,
+                              border: pw.Border.all(color: PdfColors.blue300, width: 0.5),
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                            ),
+                            child: pw.Text(
+                              '[ e-TTD RW ]',
+                              style: pw.TextStyle(
+                                color: PdfColors.blue800,
+                                fontSize: 9,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
                         pw.SizedBox(height: 12),
                         pw.Container(height: 0.5, width: 120, color: PdfColors.black),
                         pw.SizedBox(height: 2),
@@ -279,22 +315,29 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
                         ),
                         pw.SizedBox(height: 12),
                         // Penanda TTD Elektronik Lurah
-                        pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: pw.BoxDecoration(
-                            color: PdfColors.red50,
-                            border: pw.Border.all(color: PdfColors.red300, width: 0.5),
-                            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
-                          ),
-                          child: pw.Text(
-                            '[ e-TTD LURAH ]',
-                            style: pw.TextStyle(
-                              color: PdfColors.red800,
-                              fontSize: 9,
-                              fontWeight: pw.FontWeight.bold,
+                        if (_lurahSignatureBytes != null)
+                          pw.Container(
+                            height: 40,
+                            width: 80,
+                            child: pw.Image(pw.MemoryImage(_lurahSignatureBytes!)),
+                          )
+                        else
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: pw.BoxDecoration(
+                              color: PdfColors.red50,
+                              border: pw.Border.all(color: PdfColors.red300, width: 0.5),
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                            ),
+                            child: pw.Text(
+                              '[ e-TTD LURAH ]',
+                              style: pw.TextStyle(
+                                color: PdfColors.red800,
+                                fontSize: 9,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
                         pw.SizedBox(height: 12),
                         pw.Container(height: 0.5, width: 130, color: PdfColors.black),
                         pw.SizedBox(height: 2),
@@ -494,7 +537,7 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
                       const SizedBox(height: 32),
                       const Text("Tanggapan / Hasil", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AktivitasDetailView.textGray)),
                       const SizedBox(height: 12),
-                      if (isLaporan)
+                      if (!isSurat)
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -503,13 +546,13 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
-                              Icon(Icons.check_circle_outline, size: 40, color: Color(0xFF10B981)),
-                              SizedBox(height: 12),
-                              Text("Laporan Telah Diselesaikan", style: TextStyle(color: AktivitasDetailView.textDark, fontWeight: FontWeight.w600)),
-                              SizedBox(height: 4),
-                              Text("Terima kasih atas partisipasi Anda", style: TextStyle(color: AktivitasDetailView.textGray, fontSize: 12)),
+                              const Icon(Icons.check_circle_outline, size: 40, color: Color(0xFF10B981)),
+                              const SizedBox(height: 12),
+                              Text(!isSurat && widget.activityType == 'iuran' ? "Pembayaran Telah Dikonfirmasi" : "Laporan Telah Diselesaikan", style: const TextStyle(color: AktivitasDetailView.textDark, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 4),
+                              const Text("Terima kasih atas partisipasi Anda", style: TextStyle(color: AktivitasDetailView.textGray, fontSize: 12)),
                             ],
                           ),
                         )
@@ -556,6 +599,22 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
                                   maxLines: 15,
                                   overflow: TextOverflow.fade,
                                 ),
+                                if (_rtSignatureBytes != null || _rwSignatureBytes != null || _lurahSignatureBytes != null) ...[
+                                  const Divider(height: 32),
+                                  const Text("Verifikasi Tanda Tangan Digital:", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AktivitasDetailView.textGray)),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    children: [
+                                      if (_rtSignatureBytes != null)
+                                        _buildSignaturePreview("RT", _rtSignatureBytes!),
+                                      if (_rwSignatureBytes != null)
+                                        _buildSignaturePreview("RW", _rwSignatureBytes!),
+                                      if (_lurahSignatureBytes != null)
+                                        _buildSignaturePreview("Lurah", _lurahSignatureBytes!),
+                                    ],
+                                  ),
+                                ],
                               ],
                             ),
                           )
@@ -722,6 +781,23 @@ class _AktivitasDetailViewState extends State<AktivitasDetailView> {
         isError: true,
       );
     }
+  }
+
+  Widget _buildSignaturePreview(String label, Uint8List bytes) {
+    return Column(
+      children: [
+        Container(
+          height: 40, width: 60,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Image.memory(bytes, fit: BoxFit.contain),
+        ),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+      ],
+    );
   }
 
   Widget _buildDetailRow(String label, String value) {

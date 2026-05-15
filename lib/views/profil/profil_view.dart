@@ -64,15 +64,15 @@ class _ProfilViewState extends State<ProfilView> {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withOpacity(0.9),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacity(0.8),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -1234,7 +1234,7 @@ class _ProfilViewState extends State<ProfilView> {
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black
-                                                      .withValues(alpha: 0.05),
+                                                      .withOpacity(0.05),
                                                   blurRadius: 20,
                                                   offset: const Offset(0, 10),
                                                 ),

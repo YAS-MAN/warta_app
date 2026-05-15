@@ -72,11 +72,11 @@ class _RtMainViewState extends State<RtMainView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.home_outlined, Icons.home, "Home", 0),
-              _buildNavItem(Icons.account_balance_wallet_outlined, Icons.account_balance_wallet, "Manajemen", 1),
+              _buildNavItem(Icons.home, "Home", 0),
+              _buildNavItem(Icons.account_balance_wallet, "Manajemen", 1),
               const SizedBox(width: 48), // Space untuk FAB
-              _buildNavItem(Icons.fact_check_outlined, Icons.fact_check, "Approval", 2),
-              _buildNavItem(Icons.person_outline, Icons.person, "Profil", 3),
+              _buildNavItem(Icons.fact_check, "Approval", 2),
+              _buildNavItem(Icons.person, "Profil", 3),
             ],
           ),
         ),
@@ -84,8 +84,7 @@ class _RtMainViewState extends State<RtMainView> {
     );
   }
 
-  Widget _buildNavItem(
-      IconData iconOutlined, IconData iconFilled, String label, int index) {
+  Widget _buildNavItem(IconData icon, String label, int index) {
     final isSelected = _currentIndex == index;
     final primaryRed = const Color(0xFF8B0000);
     final textGray = const Color(0xFF6B7280);
@@ -97,7 +96,7 @@ class _RtMainViewState extends State<RtMainView> {
         width: 65,
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? primaryRed.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected ? primaryRed.withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -105,7 +104,7 @@ class _RtMainViewState extends State<RtMainView> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              isSelected ? iconFilled : iconOutlined,
+              icon,
               color: isSelected ? primaryRed : textGray,
               size: 24,
             ),

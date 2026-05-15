@@ -94,7 +94,7 @@ class _RwProfilViewState extends State<RwProfilView> {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(16), border: Border.all(color: primaryRed.withValues(alpha: 0.15))),
+        decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(16), border: Border.all(color: primaryRed.withOpacity(0.15))),
         child: Column(
           children: [
             Icon(icon, color: primaryRed, size: 32),
@@ -123,9 +123,9 @@ class _RwProfilViewState extends State<RwProfilView> {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 1.5),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))],
+              color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -184,50 +184,94 @@ class _RwProfilViewState extends State<RwProfilView> {
   void _showLogoutDialog(BuildContext context, AuthViewModel authVM) {
     showDialog(
       context: context,
-      builder: (ctx) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+      barrierColor: Colors.black.withOpacity(0.1),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Dialog(
-          backgroundColor: Colors.white.withValues(alpha: 0.85),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28), side: BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 1.5)),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.8),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("Konfirmasi Logout", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+                const Text(
+                  "Konfirmasi Logout",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 const Text(
                   "Apakah Anda yakin ingin keluar dari sesi aplikasi WARTA Anda saat ini?",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 13, height: 1.5),
+                  style: TextStyle(color: Colors.black54, fontSize: 13),
                 ),
                 const SizedBox(height: 32),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
-                        child: const Text("BATAL", style: TextStyle(color: Color(0xFF9CA3AF), fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1)),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text(
+                        "BATAL",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          Navigator.pop(ctx);
-                          await authVM.logout();
-                          if (context.mounted) {
-                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const AuthGate()), (route) => false);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B0000),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          elevation: 0,
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B0000),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text("KELUAR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1)),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      onPressed: () async {
+                        await authVM.logout();
+                        if (context.mounted) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const AuthGate()),
+                            (route) => false,
+                          );
+                        }
+                      },
+                      child: const Text(
+                        "KELUAR",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -304,7 +348,7 @@ class _RwProfilViewState extends State<RwProfilView> {
         decoration: BoxDecoration(
           gradient: const LinearGradient(colors: [primaryRed, Color(0xFF4A0000)], begin: Alignment.topLeft, end: Alignment.bottomRight),
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 15, offset: const Offset(0, 10))],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 10))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,7 +362,7 @@ class _RwProfilViewState extends State<RwProfilView> {
                     children: [
                       Container(
                         width: 32, height: 32,
-                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1)),
+                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withOpacity(0.2), width: 1)),
                         child: ClipOval(
                           child: Column(
                             children: [
@@ -343,7 +387,7 @@ class _RwProfilViewState extends State<RwProfilView> {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
                   child: Text("RW ${user?.rw ?? '-'}", style: const TextStyle(color: Colors.white, fontSize: 9)),
                 ),
               ],
@@ -368,9 +412,9 @@ class _RwProfilViewState extends State<RwProfilView> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: goldColor.withValues(alpha: 0.18),
+                        color: goldColor.withOpacity(0.18),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: goldColor.withValues(alpha: 0.35)),
+                        border: Border.all(color: goldColor.withOpacity(0.35)),
                       ),
                       child: const Text("KETUA RW", style: TextStyle(color: goldColor, fontWeight: FontWeight.bold, fontSize: 10)),
                     ),
@@ -400,7 +444,7 @@ class _RwProfilViewState extends State<RwProfilView> {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: isLogout ? const Color(0xFFFEF2F2) : primaryRed.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: isLogout ? const Color(0xFFFEF2F2) : primaryRed.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
               child: Icon(icon, color: isLogout ? Colors.red : primaryRed, size: 20),
             ),
             const SizedBox(width: 14),
@@ -446,7 +490,7 @@ class _RwProfilViewState extends State<RwProfilView> {
                     borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
                     child: Stack(
                       children: [
-                        Positioned(right: -20, top: -20, child: Transform.rotate(angle: 12 * 3.14159 / 180, child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 180, height: 180, color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1)))),
+                        Positioned(right: -20, top: -20, child: Transform.rotate(angle: 12 * 3.14159 / 180, child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 180, height: 180, color: const Color.fromARGB(255, 58, 1, 1).withOpacity(0.1)))),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
                           child: Row(
@@ -514,7 +558,27 @@ class _RwProfilViewState extends State<RwProfilView> {
                       ),
 
                       const SizedBox(height: 32),
-                      Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: borderColor)), child: _buildMenuItem(Icons.logout, "Keluar dari Aplikasi", isLogout: true, onTap: () => _showLogoutDialog(context, authVM))),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: _buildMenuItem(
+                          Icons.logout,
+                          "Keluar dari Aplikasi",
+                          isLogout: true,
+                          onTap: () {
+                            _showLogoutDialog(context, authVM);
+                          },
+                        ),
+                      ),
                       const SizedBox(height: 32),
                       const Center(child: Text("WARTA APP v1.0.0", style: TextStyle(color: textGray, fontSize: 10, letterSpacing: 1))),
                       const SizedBox(height: 40),
@@ -524,7 +588,7 @@ class _RwProfilViewState extends State<RwProfilView> {
               ],
             ),
           ),
-          if (authVM.isLoading || _isUploadingSignature) Container(color: Colors.black.withValues(alpha: 0.35), child: const Center(child: CircularProgressIndicator(color: Colors.white))),
+          if (authVM.isLoading || _isUploadingSignature) Container(color: Colors.black.withOpacity(0.35), child: const Center(child: CircularProgressIndicator(color: Colors.white))),
         ],
       ),
     );

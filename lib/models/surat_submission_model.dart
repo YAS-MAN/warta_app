@@ -15,6 +15,9 @@ class SuratSubmissionModel {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final String? actedByUid;
+  final String? rtUid;
+  final String? rwUid;
+  final String? lurahUid;
 
   const SuratSubmissionModel({
     required this.id,
@@ -31,6 +34,9 @@ class SuratSubmissionModel {
     this.createdAt,
     this.updatedAt,
     this.actedByUid,
+    this.rtUid,
+    this.rwUid,
+    this.lurahUid,
   });
 
   factory SuratSubmissionModel.fromFirestore(
@@ -52,6 +58,9 @@ class SuratSubmissionModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       actedByUid: data['actedByUid'] as String?,
+      rtUid: data['rtUid'] as String?,
+      rwUid: data['rwUid'] as String?,
+      lurahUid: data['lurahUid'] as String?,
     );
   }
 }

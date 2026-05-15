@@ -97,6 +97,7 @@ class _RtScannerViewState extends State<RtScannerView> {
   }) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
       backgroundColor: Colors.transparent,
@@ -107,14 +108,15 @@ class _RtScannerViewState extends State<RtScannerView> {
             borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               // Sukses Icon
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
+                  color: Colors.green.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -141,7 +143,7 @@ class _RtScannerViewState extends State<RtScannerView> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFF9FAFB),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,6 +188,7 @@ class _RtScannerViewState extends State<RtScannerView> {
               ),
             ],
           ),
+          ),
         );
       },
     );
@@ -229,7 +232,7 @@ class _RtScannerViewState extends State<RtScannerView> {
           // Frame Overlay (Kotak Scan)
           Container(
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: Colors.black.withOpacity(0.5),
             ),
           ),
           Center(

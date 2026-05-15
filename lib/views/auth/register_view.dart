@@ -519,7 +519,7 @@ class _RegisterViewState extends State<RegisterView> {
                 begin: Alignment.topLeft, end: Alignment.bottomRight,
               ),
               borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
             ),
             child: Stack(
               children: [
@@ -527,7 +527,7 @@ class _RegisterViewState extends State<RegisterView> {
                   right: -10, top: -10,
                   child: Transform.rotate(
                     angle: 12 * 3.14159 / 180,
-                    child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 100, height: 100, color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1)),
+                    child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 100, height: 100, color: const Color.fromARGB(255, 58, 1, 1).withOpacity(0.1)),
                   ),
                 ),
                 Padding(
@@ -580,7 +580,7 @@ class _RegisterViewState extends State<RegisterView> {
                       GestureDetector(
                         onTap: _isProcessing ? null : _ambilFotoKTP,
                         child: DottedBorder(
-                          color: goldColor.withValues(alpha: 0.5),
+                          color: goldColor.withOpacity(0.5),
                           strokeWidth: 2,
                           dashPattern: const [8, 4],
                           borderType: BorderType.RRect,
@@ -588,7 +588,7 @@ class _RegisterViewState extends State<RegisterView> {
                           child: Container(
                             width: double.infinity,
                             height: 180, // Optimized height
-                            decoration: BoxDecoration(color: goldColor.withValues(alpha: 0.03), borderRadius: BorderRadius.circular(16)),
+                            decoration: BoxDecoration(color: goldColor.withOpacity(0.03), borderRadius: BorderRadius.circular(16)),
                             child: _ktpImage != null
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
@@ -598,7 +598,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         kIsWeb ? Image.network(_ktpImage!.path, fit: BoxFit.cover) : Image.file(File(_ktpImage!.path), fit: BoxFit.cover),
                                         if (_isProcessing)
                                           Container(
-                                            color: Colors.black.withValues(alpha: 0.6),
+                                            color: Colors.black.withOpacity(0.6),
                                             child: const Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
@@ -610,11 +610,11 @@ class _RegisterViewState extends State<RegisterView> {
                                           ),
                                         if (!_isProcessing)
                                           Container(
-                                            color: Colors.black.withValues(alpha: 0.1),
+                                            color: Colors.black.withOpacity(0.1),
                                             alignment: Alignment.center,
                                             child: Container(
                                               padding: const EdgeInsets.all(10),
-                                              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+                                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
                                               child: const Icon(Icons.refresh_rounded, color: Colors.white, size: 32),
                                             ),
                                           ),

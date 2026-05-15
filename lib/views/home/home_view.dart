@@ -36,11 +36,24 @@ class _HomeViewState extends State<HomeView> {
   static const String _notifPrefKey = 'home_has_notif_enabled';
   static bool _notifFallbackCache = true;
   bool _hasNotification = true;
-  
+
   final IuranService _iuranService = IuranService();
 
   String _getCurrentBulan() {
-    const List<String> months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    const List<String> months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
     return months[DateTime.now().month - 1];
   }
 
@@ -52,20 +65,32 @@ class _HomeViewState extends State<HomeView> {
     return Consumer<AuthViewModel>(
       builder: (context, authVM, _) {
         final user = authVM.currentUser;
-        if (user == null || user.kelurahan == null || user.kelurahan!.isEmpty) return const SizedBox.shrink();
-        
+        if (user == null || user.kelurahan == null || user.kelurahan!.isEmpty)
+          return const SizedBox.shrink();
+
         // Reminder hanya muncul jika sudah tanggal 25 ke atas
         if (DateTime.now().day < 25) return const SizedBox.shrink();
 
         return FutureBuilder<bool>(
           future: () async {
-            final rtSettings = await _iuranService.getRtSettings(user.kelurahan ?? '', user.rw ?? '', user.rt ?? '');
+            final rtSettings = await _iuranService.getRtSettings(
+              user.kelurahan ?? '',
+              user.rw ?? '',
+              user.rt ?? '',
+            );
             if (rtSettings == null || !rtSettings.isActive) return false;
-            final tagihan = await _iuranService.cekPembayaranBulanIni(user.uid, _getCurrentBulan(), _getCurrentTahun());
-            return tagihan == null || tagihan.status == 2; // Harus bayar jika belum bayar (null) atau ditolak (2)
+            final tagihan = await _iuranService.cekPembayaranBulanIni(
+              user.uid,
+              _getCurrentBulan(),
+              _getCurrentTahun(),
+            );
+            return tagihan == null ||
+                tagihan.status ==
+                    2; // Harus bayar jika belum bayar (null) atau ditolak (2)
           }(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) return const SizedBox.shrink();
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return const SizedBox.shrink();
             final harusBayar = snapshot.data ?? false;
             if (!harusBayar) return const SizedBox.shrink();
 
@@ -79,7 +104,11 @@ class _HomeViewState extends State<HomeView> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 32),
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.red,
+                    size: 32,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -87,12 +116,19 @@ class _HomeViewState extends State<HomeView> {
                       children: [
                         const Text(
                           "Pengingat Iuran",
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 14),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           "Anda belum membayar iuran RT untuk ${_getCurrentBulan()}.",
-                          style: const TextStyle(fontSize: 12, color: Colors.red),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.red,
+                          ),
                         ),
                       ],
                     ),
@@ -100,17 +136,31 @@ class _HomeViewState extends State<HomeView> {
                   const SizedBox(width: 12),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const IuranView()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const IuranView()),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       minimumSize: Size.zero,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       elevation: 0,
                     ),
-                    child: const Text("Bayar", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "Bayar",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -249,40 +299,40 @@ class _HomeViewState extends State<HomeView> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                          // Header: Nama user dibungkus Expanded agar tidak overflow
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _getGreeting(),
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(
-                                      alpha: 0.7,
-                                    ),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Consumer<AuthViewModel>(
-                                  builder: (context, authVM, child) {
-                                    final nama =
-                                        authVM.currentUser?.nama ??
-                                        "Budi Setiawan";
-                                    return Text(
-                                      nama,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
+                              // Header: Nama user dibungkus Expanded agar tidak overflow
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _getGreeting(),
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        fontSize: 14,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    );
-                                  },
+                                    ),
+                                    Consumer<AuthViewModel>(
+                                      builder: (context, authVM, _) {
+                                        final nama =
+                                            authVM.currentUser?.nama ??
+                                            "Budi Setiawan";
+                                        return Text(
+                                          nama,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
 
                               Row(
                                 children: [
@@ -565,10 +615,7 @@ class _HomeViewState extends State<HomeView> {
 
                             return Column(
                               children: [
-                                _buildActivityItem(
-                                  context,
-                                  item,
-                                ),
+                                _buildActivityItem(context, item),
                                 if (idx < items.length - 1)
                                   const Padding(
                                     padding: EdgeInsets.symmetric(vertical: 12),
@@ -716,11 +763,7 @@ class _HomeViewState extends State<HomeView> {
               ),
             ],
           ),
-          child: Icon(
-            icon,
-            color: primaryRed,
-            size: 28,
-          ),
+          child: Icon(icon, color: primaryRed, size: 28),
         ),
         const SizedBox(height: 6),
         Text(
@@ -739,10 +782,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   // Item List Aktivitas
-  Widget _buildActivityItem(
-    BuildContext context,
-    AktivitasModel item,
-  ) {
+  Widget _buildActivityItem(BuildContext context, AktivitasModel item) {
     final icon = IconData(item.iconCodePoint, fontFamily: item.iconFontFamily);
     final iconColor = item.iconColor;
     final iconBg = item.iconBgColor;
@@ -772,10 +812,7 @@ class _HomeViewState extends State<HomeView> {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: iconBg,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(width: 12),
@@ -1092,7 +1129,7 @@ class _HomeViewState extends State<HomeView> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 13),
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -1100,9 +1137,9 @@ class _HomeViewState extends State<HomeView> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
-                            crossAxisSpacing: 10,
+                            crossAxisSpacing: 9,
                             mainAxisSpacing: 12,
-                            childAspectRatio: 0.8,
+                            childAspectRatio: 0.75,
                           ),
                       itemBuilder: (_, index) {
                         final service = wargaServices[index];
@@ -1132,7 +1169,7 @@ class _HomeViewState extends State<HomeView> {
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.1),
+      barrierColor: Colors.black.withOpacity(0.1),
       builder: (context) {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
@@ -1142,15 +1179,15 @@ class _HomeViewState extends State<HomeView> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.6),
+                color: Colors.white.withOpacity(0.6),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: Colors.white.withOpacity(0.8),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withOpacity(0.05),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),

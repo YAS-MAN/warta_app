@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
-import 'package:intl/intl.dart';
+import '../../services/iuran_service.dart';
 import '../../models/darurat_model.dart';
 import '../../services/darurat_service.dart';
 import '../darurat/darurat_rt_action_view.dart';
+import '../../services/surat_service.dart';
+import '../../services/report_service.dart';
+import '../../models/surat_submission_model.dart';
+import '../../models/report_model.dart';
+import '../../models/iuran_model.dart';
+import '../../models/user_model.dart';
+import 'dart:async';
 
 class RtHomeView extends StatefulWidget {
   final Function(int, [int?]) onNavigate;
@@ -19,6 +26,48 @@ class _RtHomeViewState extends State<RtHomeView> {
   static const Color bgGray = Color(0xFFF9FAFB);
   static const Color textDark = Color(0xFF1F2937);
   static const Color goldColor = Color(0xFFD4AF37);
+  final SuratService _suratService = SuratService();
+  final ReportService _reportService = ReportService();
+  final IuranService _iuranService = IuranService();
+
+  Stream<List<dynamic>> _combineStreams(UserModel user) {
+    // Gabungkan surat, laporan, dan iuran secara real-time
+    final suratStream = _suratService.streamSubmissionsForRt(
+      kelurahan: user.kelurahan ?? '',
+      rw: user.rw ?? '',
+      rt: user.rt ?? '',
+    );
+    final reportStream = _reportService.streamReportsForRt(
+      rt: user.rt ?? '',
+      rw: user.rw ?? '',
+    );
+    final iuranStream = _iuranService.streamTagihanMasuk(
+      user.kelurahan ?? '',
+      user.rw ?? '',
+      user.rt ?? '',
+      status: 0, // Pending
+    );
+
+    return suratStream.asyncMap((suratList) async {
+      final reports = await reportStream.first;
+      final iurans = await iuranStream.first;
+      final combined = [...suratList, ...reports, ...iurans];
+      combined.sort((a, b) {
+        DateTime? dateA;
+        if (a is SuratSubmissionModel) dateA = a.createdAt;
+        else if (a is ReportModel) dateA = a.createdAt;
+        else if (a is IuranModel) dateA = a.createdAt;
+
+        DateTime? dateB;
+        if (b is SuratSubmissionModel) dateB = b.createdAt;
+        else if (b is ReportModel) dateB = b.createdAt;
+        else if (b is IuranModel) dateB = b.createdAt;
+
+        return (dateB ?? DateTime(0)).compareTo(dateA ?? DateTime(0));
+      });
+      return combined;
+    });
+  }
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -59,7 +108,7 @@ class _RtHomeViewState extends State<RtHomeView> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -87,7 +136,7 @@ class _RtHomeViewState extends State<RtHomeView> {
                                 58,
                                 1,
                                 1,
-                              ).withValues(alpha: 0.1),
+                              ).withOpacity(0.1),
                             ),
                           ),
                         ),
@@ -143,7 +192,7 @@ class _RtHomeViewState extends State<RtHomeView> {
                                       borderRadius: BorderRadius.circular(20),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.2),
+                                          color: Colors.black.withOpacity(0.2),
                                           blurRadius: 4,
                                           offset: const Offset(0, 2),
                                         ),
@@ -163,25 +212,61 @@ class _RtHomeViewState extends State<RtHomeView> {
                               const SizedBox(height: 24),
                               
                               // Kotak Info Laporan Cepat
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.mark_email_unread_outlined, color: Colors.white, size: 20),
-                                    SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        "Terdapat 3 Laporan Warga baru yang membutuhkan tindak lanjut Anda.",
-                                        style: TextStyle(color: Colors.white, fontSize: 12),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              Consumer<AuthViewModel>(
+                                builder: (context, authVM, _) {
+                                  final user = authVM.currentUser;
+                                  if (user == null) return const SizedBox.shrink();
+                                  
+                                  return StreamBuilder<List<dynamic>>(
+                                    stream: _combineStreams(user),
+                                    builder: (context, snapshot) {
+                                      final totalCount = snapshot.data?.length ?? 0;
+                                      if (totalCount == 0) {
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(16),
+                                            border: Border.all(color: Colors.white.withOpacity(0.2)),
+                                          ),
+                                          child: const Row(
+                                            children: [
+                                              Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+                                              SizedBox(width: 12),
+                                              Expanded(
+                                                child: Text(
+                                                  "Semua tugas Anda sudah selesai. Belum ada pengajuan baru.",
+                                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                      
+                                      return Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.mark_email_unread_outlined, color: Colors.white, size: 20),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                "Terdapat $totalCount pengajuan & laporan baru yang membutuhkan tindak lanjut Anda.",
+                                                style: const TextStyle(color: Colors.white, fontSize: 12),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -206,7 +291,7 @@ class _RtHomeViewState extends State<RtHomeView> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
+                          color: Colors.black.withOpacity(0.08),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -218,28 +303,28 @@ class _RtHomeViewState extends State<RtHomeView> {
                         _buildQuickAction(
                           Icons.request_page_outlined,
                           Colors.orange,
-                          Colors.orange.withValues(alpha: 0.1),
+                          Colors.orange.withOpacity(0.1),
                           "Surat",
                           () => widget.onNavigate(2, 1),
                         ),
                         _buildQuickAction(
                           Icons.report_problem_outlined,
                           Colors.red,
-                          Colors.red.withValues(alpha: 0.1),
+                          Colors.red.withOpacity(0.1),
                           "Laporan",
                           () => widget.onNavigate(2, 2),
                         ),
                         _buildQuickAction(
                           Icons.payments_outlined,
                           Colors.green,
-                          Colors.green.withValues(alpha: 0.1),
+                          Colors.green.withOpacity(0.1),
                           "Iuran",
                           () => widget.onNavigate(1),
                         ),
                         _buildQuickAction(
                           Icons.security_outlined,
                           Colors.blue,
-                          Colors.blue.withValues(alpha: 0.1),
+                          Colors.blue.withOpacity(0.1),
                           "Ronda",
                           () => widget.onNavigate(1),
                         ),
@@ -285,7 +370,7 @@ class _RtHomeViewState extends State<RtHomeView> {
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFD32F2F).withValues(alpha: 0.6), // Shadow dipertajam sedikit
+                                    color: const Color(0xFFD32F2F).withOpacity(0.6), // Shadow dipertajam sedikit
                                     blurRadius: 15,
                                     offset: const Offset(0, 8),
                                   ),
@@ -296,7 +381,7 @@ class _RtHomeViewState extends State<RtHomeView> {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
+                                      color: Colors.white.withOpacity(0.2),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
@@ -318,7 +403,7 @@ class _RtHomeViewState extends State<RtHomeView> {
                                         const SizedBox(height: 2),
                                         Text(
                                           "${emergency.namaWarga} menekan tombol bahaya!",
-                                          style: TextStyle(color: Colors.white.withValues(alpha: 0.95), fontSize: 13),
+                                          style: TextStyle(color: Colors.white.withOpacity(0.95), fontSize: 13),
                                         ),
                                         const SizedBox(height: 4),
                                         const Text(
@@ -379,80 +464,112 @@ class _RtHomeViewState extends State<RtHomeView> {
                   ),
                   const SizedBox(height: 12),
                   
-                  // Dummy ListView yang bisa diklik
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 3,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      return InkWell(
-                        onTap: () {
-                          // Trigger pindah tab Approval
-                          widget.onNavigate(2, index == 0 ? 1 : 2);
-                        },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFEF2F2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.description_outlined,
-                                  color: Color(0xFF8B0000),
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      index == 0 ? "Surat Keterangan Usaha" : "Laporan Infrastruktur",
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: textDark,
-                                      ),
+                  Consumer<AuthViewModel>(
+                    builder: (context, authVM, _) {
+                      final user = authVM.currentUser;
+                      if (user == null) return const SizedBox.shrink();
+                      
+                      return StreamBuilder<List<dynamic>>(
+                        stream: _combineStreams(user),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator(color: primaryRed));
+                          }
+                          
+                          final items = snapshot.data ?? [];
+                          if (items.isEmpty) {
+                            return _buildEmptyState();
+                          }
+                          
+                          // Tampilkan maksimal 5 item terbaru
+                          final displayItems = items.take(5).toList();
+                          
+                          return ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: displayItems.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final item = displayItems[index];
+                              bool isSurat = item is SuratSubmissionModel;
+                              String title = isSurat ? item.jenisSurat : item.title;
+                              String subtitle = isSurat ? "Pemohon: ${item.nama}" : "Laporan dari: ${item.reporterName}";
+                              
+                              return InkWell(
+                                onTap: () {
+                                  // Navigasi ke tab Approval (index 2) dan sub-tab sesuai jenis
+                                  widget.onNavigate(2, isSurat ? 1 : 2);
+                                },
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: Colors.grey.withOpacity(0.1),
                                     ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      "Menunggu Persetujuan Anda",
-                                      style: TextStyle(
-                                        fontSize: 12,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.02),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: isSurat ? const Color(0xFFFEF2F2) : const Color(0xFFFFF7ED),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Icon(
+                                          isSurat ? Icons.description_outlined : Icons.report_problem_outlined,
+                                          color: isSurat ? const Color(0xFF8B0000) : Colors.orange.shade800,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              title,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: textDark,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              subtitle,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.chevron_right,
                                         color: Colors.grey,
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey,
-                              ),
-                            ],
-                          ),
-                        ),
+                              );
+                            },
+                          );
+                        },
                       );
                     },
                   ),
@@ -462,6 +579,28 @@ class _RtHomeViewState extends State<RtHomeView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.done_all_rounded, size: 48, color: Colors.grey.withOpacity(0.3)),
+          const SizedBox(height: 12),
+          Text(
+            "Belum ada aktivitas baru yang masuk.",
+            style: TextStyle(color: Colors.grey.withOpacity(0.5), fontSize: 13),
+          ),
+        ],
       ),
     );
   }

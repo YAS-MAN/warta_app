@@ -130,7 +130,7 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
                 begin: Alignment.topLeft, end: Alignment.bottomRight,
               ),
               borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
             ),
             child: Stack(
               children: [
@@ -138,7 +138,7 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
                   right: -20, top: -20,
                   child: Transform.rotate(
                     angle: 12 * 3.14159 / 180,
-                    child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 120, height: 120, color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1)),
+                    child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 120, height: 120, color: const Color.fromARGB(255, 58, 1, 1).withOpacity(0.1)),
                   ),
                 ),
                 const Padding(
@@ -173,7 +173,7 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFF1F1), // Light pink
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: primaryRed.withValues(alpha: 0.1), width: 1.5),
+                          border: Border.all(color: primaryRed.withOpacity(0.1), width: 1.5),
                         ),
                         child: const Icon(Icons.mail_outline_rounded, size: 36, color: primaryRed),
                       ),
@@ -192,7 +192,7 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: const Color(0xFFF1F5F9)),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +271,7 @@ class _EmailVerifyViewState extends State<EmailVerifyView> {
         children: [
           Container(
             width: 22, height: 22,
-            decoration: BoxDecoration(color: primaryRed.withValues(alpha: 0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: primaryRed.withOpacity(0.1), shape: BoxShape.circle),
             child: Center(child: Text(number, style: const TextStyle(color: primaryRed, fontSize: 11, fontWeight: FontWeight.bold))),
           ),
           const SizedBox(width: 10),

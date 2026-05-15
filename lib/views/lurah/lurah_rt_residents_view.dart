@@ -154,7 +154,7 @@ class _LurahRtResidentsViewState extends State<LurahRtResidentsView> {
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: iconColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
               child: Icon(icon, color: iconColor, size: 24),
             ),
             const SizedBox(width: 16),
@@ -244,7 +244,7 @@ class _LurahRtResidentsViewState extends State<LurahRtResidentsView> {
           ),
           if (_isUpdating)
             Container(
-              color: Colors.black.withValues(alpha: 0.3),
+              color: Colors.black.withOpacity(0.3),
               child: const Center(
                 child: CircularProgressIndicator(color: Color(0xFF8B0000)),
               ),
@@ -344,7 +344,7 @@ class _LurahRtResidentsViewState extends State<LurahRtResidentsView> {
                   children: [
                     Text(title, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
                     const SizedBox(height: 2),
-                    Text("Ketua RT: ${widget.rtName}", style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w500)),
+                    Text("Ketua RT: ${widget.rtName}", style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),

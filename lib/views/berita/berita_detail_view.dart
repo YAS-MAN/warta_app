@@ -34,7 +34,7 @@ class BeritaDetailView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity(0.3),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
@@ -69,7 +69,7 @@ class BeritaDetailView extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8B0000).withValues(alpha: 0.08),
+                      color: const Color(0xFF8B0000).withOpacity(0.08),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -136,7 +136,7 @@ class BeritaDetailView extends StatelessWidget {
                     berita.content,
                     style: TextStyle(
                       fontSize: 15,
-                      color: textDark.withValues(alpha: 0.85),
+                      color: textDark.withOpacity(0.85),
                       height: 1.8,
                     ),
                     textAlign: TextAlign.justify,

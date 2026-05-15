@@ -233,7 +233,7 @@ class _FormRegistViewState extends State<FormRegistView> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
+                              color: Colors.black.withOpacity(0.1),
                               blurRadius: 15,
                               offset: const Offset(0, 5),
                             ),
@@ -261,7 +261,7 @@ class _FormRegistViewState extends State<FormRegistView> {
                                       58,
                                       1,
                                       1,
-                                    ).withValues(alpha: 0.1),
+                                    ).withOpacity(0.1),
                                   ),
                                 ),
                               ),
@@ -329,7 +329,7 @@ class _FormRegistViewState extends State<FormRegistView> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: Colors.black.withOpacity(0.05),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -375,7 +375,7 @@ class _FormRegistViewState extends State<FormRegistView> {
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withValues(alpha: 0.5),
+                                            color: Colors.black.withOpacity(0.5),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(Icons.refresh, color: Colors.white, size: 18),
@@ -390,7 +390,7 @@ class _FormRegistViewState extends State<FormRegistView> {
                                     Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: primaryRed.withValues(alpha: 0.1),
+                                        color: primaryRed.withOpacity(0.1),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
@@ -439,7 +439,7 @@ class _FormRegistViewState extends State<FormRegistView> {
                         color: const Color(0xFFDCFCE7),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                          color: const Color(0xFF10B981).withOpacity(0.4),
                         ),
                       ),
                       child: const Row(

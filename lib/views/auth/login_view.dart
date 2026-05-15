@@ -120,7 +120,7 @@ class _LoginViewState extends State<LoginView> {
                     width: 40,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.3),
+                      color: Colors.grey.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -283,7 +283,7 @@ class _LoginViewState extends State<LoginView> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: Colors.black.withOpacity(0.1),
                       blurRadius: 25,
                       offset: const Offset(0, 10),
                     ),
@@ -407,7 +407,7 @@ class _LoginViewState extends State<LoginView> {
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     elevation: 5,
-                                    shadowColor: primaryRed.withValues(alpha: 0.5),
+                                    shadowColor: primaryRed.withOpacity(0.5),
                                   ),
                                   onPressed: authVM.isLoading ? null : _login,
                                   child: authVM.isLoading

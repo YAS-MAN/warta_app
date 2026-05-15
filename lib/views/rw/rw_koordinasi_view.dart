@@ -39,7 +39,7 @@ class RwKoordinasiView extends StatelessWidget {
                 right: -20, top: -10,
                 child: Transform.rotate(
                   angle: 12 * 3.14159 / 180,
-                  child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 140, height: 140, color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.15)),
+                  child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 140, height: 140, color: const Color.fromARGB(255, 58, 1, 1).withOpacity(0.15)),
                 ),
               ),
               Center(child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18))),
@@ -76,7 +76,7 @@ class _TabDaftarRT extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.people_outline, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
+                    Icon(Icons.people_outline, size: 64, color: Colors.grey.withOpacity(0.3)),
                     const SizedBox(height: 16),
                     const Text("Belum ada ketua RT terdaftar\ndi wilayah RW ini.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 14)),
                   ],
@@ -99,7 +99,7 @@ class _TabDaftarRT extends StatelessWidget {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: const Color(0xFFE5E7EB)),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
                   child: Row(
                     children: [

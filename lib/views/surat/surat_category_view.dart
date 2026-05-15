@@ -43,7 +43,7 @@ class SuratCategoryView extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -71,7 +71,7 @@ class SuratCategoryView extends StatelessWidget {
                                 58,
                                 1,
                                 1,
-                              ).withValues(alpha: 0.1),
+                              ).withOpacity(0.1),
                             ),
                           ),
                         ),
@@ -86,7 +86,7 @@ class SuratCategoryView extends StatelessWidget {
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
+                                    color: Colors.white.withOpacity(0.2),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -168,7 +168,7 @@ class SuratCategoryView extends StatelessWidget {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
+                                color: Colors.black.withOpacity(0.02),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),

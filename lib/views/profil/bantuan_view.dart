@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../utils/top_notification.dart';
 import '../../services/bantuan_service.dart';
 import '../../models/faq_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BantuanView extends StatelessWidget {
   const BantuanView({super.key});
@@ -131,12 +132,19 @@ class BantuanView extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
-                          onPressed: () {
-                            TopNotification.show(
-                              context: context,
-                              message: "Membuka WhatsApp Bantuan RW...",
-                              isSuccess: true,
-                            );
+                          onPressed: () async {
+                            final uri = Uri.parse("https://wa.me/6285719406858");
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            } else {
+                              if (context.mounted) {
+                                TopNotification.show(
+                                  context: context,
+                                  message: "Gagal membuka aplikasi WhatsApp",
+                                  isError: true,
+                                );
+                              }
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,

@@ -61,7 +61,7 @@ class _SuratViewState extends State<SuratView> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 15,
                           offset: const Offset(0, 10),
                         ),
@@ -91,7 +91,7 @@ class _SuratViewState extends State<SuratView> {
                                   58,
                                   1,
                                   1,
-                                ).withValues(alpha: 0.1),
+                                ).withOpacity(0.1),
                               ),
                             ),
                           ),
@@ -168,7 +168,7 @@ class _SuratViewState extends State<SuratView> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
+                                  color: Colors.black.withOpacity(0.05),
                                   blurRadius: 6,
                                   offset: const Offset(0, 4),
                                 ),
@@ -241,7 +241,7 @@ class _SuratViewState extends State<SuratView> {
                                   : null,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
+                                  color: Colors.black.withOpacity(0.1),
                                   blurRadius: 6,
                                   offset: const Offset(0, 4),
                                 ),
@@ -292,7 +292,7 @@ class _SuratViewState extends State<SuratView> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withOpacity(0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 5),
                             ),
@@ -503,7 +503,7 @@ class _SuratViewState extends State<SuratView> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         shape: BoxShape.circle,
       ),
       child: Icon(icon, color: Colors.white, size: 20),
@@ -561,7 +561,7 @@ class _SuratViewState extends State<SuratView> {
         border: Border.all(color: const Color(0xFFF9FAFB)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -604,7 +604,7 @@ class _SuratViewState extends State<SuratView> {
         border: Border.all(color: const Color(0xFFF3F4F6)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

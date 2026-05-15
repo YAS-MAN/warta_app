@@ -87,7 +87,7 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
             child: Icon(icon, color: color, size: 32),
           ),
           const SizedBox(height: 8),
@@ -145,7 +145,7 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
                     begin: Alignment.topLeft, end: Alignment.bottomRight,
                   ),
                   borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
                 ),
                 child: Stack(
                   children: [
@@ -153,7 +153,7 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
                       right: -20, top: -20,
                       child: Transform.rotate(
                         angle: 12 * 3.14159 / 180,
-                        child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 120, height: 120, color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1)),
+                        child: Image(image: const AssetImage('assets/images/warta_logo.png'), width: 120, height: 120, color: const Color.fromARGB(255, 58, 1, 1).withOpacity(0.1)),
                       ),
                     ),
                     Padding(
@@ -184,7 +184,7 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
                           Container(
                             width: 60, height: 60,
                             decoration: BoxDecoration(color: iconBgLight, borderRadius: BorderRadius.circular(16)),
-                            child: Icon(Icons.face_retouching_natural_rounded, size: 32, color: primaryRed.withValues(alpha: 0.7)),
+                            child: Icon(Icons.face_retouching_natural_rounded, size: 32, color: primaryRed.withOpacity(0.7)),
                           ),
                           const SizedBox(height: 16),
                           const Text("Ambil Foto Selfie", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: textDark, letterSpacing: -0.5)),
@@ -200,14 +200,14 @@ class _PhotoVerifViewState extends State<PhotoVerifView> {
                           GestureDetector(
                             onTap: _showPickOptions,
                             child: DottedBorder(
-                              color: goldColor.withValues(alpha: 0.5),
+                              color: goldColor.withOpacity(0.5),
                               strokeWidth: 2,
                               dashPattern: const [8, 4],
                               borderType: BorderType.RRect,
                               radius: const Radius.circular(24),
                               child: Container(
                                 width: 240, height: 240,
-                                decoration: BoxDecoration(color: goldColor.withValues(alpha: 0.03), borderRadius: BorderRadius.circular(24)),
+                                decoration: BoxDecoration(color: goldColor.withOpacity(0.03), borderRadius: BorderRadius.circular(24)),
                                 child: _selfieImage != null
                                     ? ClipRRect(
                                         borderRadius: BorderRadius.circular(22),

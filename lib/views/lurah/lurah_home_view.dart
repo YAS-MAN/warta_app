@@ -59,7 +59,7 @@ class _LurahHomeViewState extends State<LurahHomeView> {
             ),
             borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 15, offset: const Offset(0, 5)),
+              BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5)),
             ],
           ),
           child: ClipRRect(
@@ -73,7 +73,7 @@ class _LurahHomeViewState extends State<LurahHomeView> {
                     child: Image(
                       image: const AssetImage('assets/images/warta_logo.png'),
                       width: 180, height: 180,
-                      color: const Color.fromARGB(255, 58, 1, 1).withValues(alpha: 0.1),
+                      color: const Color.fromARGB(255, 58, 1, 1).withOpacity(0.1),
                     ),
                   ),
                 ),
@@ -89,7 +89,7 @@ class _LurahHomeViewState extends State<LurahHomeView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(_getGreeting(), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
+                                Text(_getGreeting(), style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14)),
                                 Consumer<AuthViewModel>(
                                   builder: (context, authVM, _) {
                                     final user = authVM.currentUser;
@@ -107,7 +107,7 @@ class _LurahHomeViewState extends State<LurahHomeView> {
                                           const SizedBox(height: 2),
                                           Text(
                                             "Kelurahan ${kel.toUpperCase()}",
-                                            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w500),
+                                            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -125,7 +125,7 @@ class _LurahHomeViewState extends State<LurahHomeView> {
                             decoration: BoxDecoration(
                               color: goldColor,
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 2))],
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))],
                             ),
                             child: const Text("PENGURUS LURAH", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
                           ),
@@ -148,15 +148,15 @@ class _LurahHomeViewState extends State<LurahHomeView> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 10))],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 10))],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildQuickAction(Icons.description_outlined, const Color(0xFF7C3AED), const Color(0xFF7C3AED).withValues(alpha: 0.1), "Laporan", () => widget.onNavigate(2, 0)),
-                _buildQuickAction(Icons.request_page_outlined, Colors.orange, Colors.orange.withValues(alpha: 0.1), "Surat", () => widget.onNavigate(2, 1)),
-                _buildQuickAction(Icons.groups_outlined, Colors.blue, Colors.blue.withValues(alpha: 0.1), "Koordinasi", () => widget.onNavigate(1)),
-                _buildQuickAction(Icons.person_outline, Colors.teal, Colors.teal.withValues(alpha: 0.1), "Profil", () => widget.onNavigate(3)),
+                _buildQuickAction(Icons.description_outlined, const Color(0xFF7C3AED), const Color(0xFF7C3AED).withOpacity(0.1), "Laporan", () => widget.onNavigate(2, 0)),
+                _buildQuickAction(Icons.request_page_outlined, Colors.orange, Colors.orange.withOpacity(0.1), "Surat", () => widget.onNavigate(2, 1)),
+                _buildQuickAction(Icons.groups_outlined, Colors.blue, Colors.blue.withOpacity(0.1), "Koordinasi", () => widget.onNavigate(1)),
+                _buildQuickAction(Icons.person_outline, Colors.teal, Colors.teal.withOpacity(0.1), "Profil", () => widget.onNavigate(3)),
               ],
             ),
           ),
@@ -176,9 +176,9 @@ class _LurahHomeViewState extends State<LurahHomeView> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
           ),
           child: Row(
             children: [
@@ -242,8 +242,8 @@ class _LurahHomeViewState extends State<LurahHomeView> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
+          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
@@ -274,12 +274,12 @@ class _LurahHomeViewState extends State<LurahHomeView> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 48),
-      decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: Colors.grey.withOpacity(0.05), borderRadius: BorderRadius.circular(20)),
       child: Column(
         children: [
-          Icon(Icons.mark_email_read_outlined, size: 48, color: Colors.grey.withValues(alpha: 0.3)),
+          Icon(Icons.mark_email_read_outlined, size: 48, color: Colors.grey.withOpacity(0.3)),
           const SizedBox(height: 12),
-          Text("Belum ada laporan masuk tingkat kelurahan.", style: TextStyle(color: Colors.grey.withValues(alpha: 0.5), fontSize: 14)),
+          Text("Belum ada laporan masuk tingkat kelurahan.", style: TextStyle(color: Colors.grey.withOpacity(0.5), fontSize: 14)),
         ],
       ),
     );

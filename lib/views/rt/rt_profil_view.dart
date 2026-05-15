@@ -41,7 +41,6 @@ class _RtProfilViewState extends State<RtProfilView> {
 
   /// Bottom sheet untuk memilih sumber foto profil baru
   Future<void> _showEditPhotoSheet(AuthViewModel authVM) async {
-    const Color primaryRed = Color(0xFF8B0000);
     const Color textDark = Color(0xFF1F2937);
     const Color textGray = Color(0xFF6B7280);
 
@@ -164,7 +163,7 @@ class _RtProfilViewState extends State<RtProfilView> {
         decoration: BoxDecoration(
           color: const Color(0xFFFEF2F2),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: primaryRed.withValues(alpha: 0.15)),
+          border: Border.all(color: primaryRed.withOpacity(0.15)),
         ),
         child: Column(
           children: [
@@ -203,15 +202,15 @@ class _RtProfilViewState extends State<RtProfilView> {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withOpacity(0.9),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacity(0.8),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -465,7 +464,7 @@ class _RtProfilViewState extends State<RtProfilView> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 15,
               offset: const Offset(0, 10),
             ),
@@ -550,7 +549,7 @@ class _RtProfilViewState extends State<RtProfilView> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -605,12 +604,12 @@ class _RtProfilViewState extends State<RtProfilView> {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD4AF37).withValues(alpha: 0.18),
+                        color: const Color(0xFFD4AF37).withOpacity(0.18),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: const Color(
                             0xFFD4AF37,
-                          ).withValues(alpha: 0.35),
+                          ).withOpacity(0.35),
                         ),
                       ),
                       child: const Text(
@@ -707,7 +706,7 @@ class _RtProfilViewState extends State<RtProfilView> {
                                 58,
                                 1,
                                 1,
-                              ).withValues(alpha: 0.1),
+                              ).withOpacity(0.1),
                             ),
                           ),
                         ),
@@ -754,7 +753,7 @@ class _RtProfilViewState extends State<RtProfilView> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withOpacity(0.05),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -855,7 +854,7 @@ class _RtProfilViewState extends State<RtProfilView> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
+                                color: Colors.black.withOpacity(0.1),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -906,7 +905,7 @@ class _RtProfilViewState extends State<RtProfilView> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withOpacity(0.05),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -944,7 +943,7 @@ class _RtProfilViewState extends State<RtProfilView> {
           // Loading overlay saat upload foto
           if (authVM.isLoading || _isUploadingSignature)
             Container(
-              color: Colors.black.withValues(alpha: 0.35),
+              color: Colors.black.withOpacity(0.35),
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -996,7 +995,7 @@ class _RtProfilViewState extends State<RtProfilView> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isLogout
-                    ? primaryRed.withValues(alpha: 0.1)
+                    ? primaryRed.withOpacity(0.1)
                     : const Color(0xFFFEF2F2),
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -1030,7 +1029,7 @@ class _RtProfilViewState extends State<RtProfilView> {
                 value: switchValue,
                 onChanged: onSwitchChanged,
                 activeThumbColor: primaryRed,
-                activeTrackColor: primaryRed.withValues(alpha: 0.4),
+                activeTrackColor: primaryRed.withOpacity(0.4),
               )
             else if (!isLogout)
               const Icon(Icons.chevron_right, color: textGray, size: 20),
@@ -1043,7 +1042,7 @@ class _RtProfilViewState extends State<RtProfilView> {
   void _showLogoutDialog(BuildContext context, AuthViewModel authVM) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.1),
+      barrierColor: Colors.black.withOpacity(0.1),
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Dialog(
@@ -1052,15 +1051,15 @@ class _RtProfilViewState extends State<RtProfilView> {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.6),
+              color: Colors.white.withOpacity(0.6),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacity(0.8),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),

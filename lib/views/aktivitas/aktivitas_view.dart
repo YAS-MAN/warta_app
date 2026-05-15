@@ -179,9 +179,22 @@ class _AktivitasViewState extends State<AktivitasView> {
                   // Filter logic based on active tab
                   List<AktivitasModel> allItems = snapshot.data!;
                   List<AktivitasModel> filteredItems = allItems.where((item) {
+                    final status = item.status.toUpperCase();
                     if (_activeTabIndex == 0) return true; // Semua
-                    if (_activeTabIndex == 1) return item.status == "PROSES"; // Menunggu
-                    if (_activeTabIndex == 2) return item.status == "BERHASIL" || item.status == "SELESAI" || item.status == "DITOLAK"; // Selesai
+                    
+                    // Menunggu: Status yang mengandung kata PROSES atau PENDING
+                    if (_activeTabIndex == 1) {
+                      return status.contains("PROSES") || status.contains("PENDING");
+                    }
+                    
+                    // Selesai: Status terminal (BERHASIL, SELESAI, DITOLAK, DISETUJUI, DIBATALKAN)
+                    if (_activeTabIndex == 2) {
+                      return status == "BERHASIL" || 
+                             status == "SELESAI" || 
+                             status == "DITOLAK" || 
+                             status == "DISETUJUI" ||
+                             status == "DIBATALKAN";
+                    }
                     return false;
                   }).toList();
 
@@ -200,19 +213,22 @@ class _AktivitasViewState extends State<AktivitasView> {
                      children: filteredItems.map((item) {
                        final currentUser = authVM.currentUser;
                        String roleLabel = 'RT';
-                       if (currentUser?.role == 'rt') {
+                       final statusUpper = item.status.toUpperCase();
+                       if (statusUpper.contains("RW")) {
                          roleLabel = 'RW';
-                       } else if (currentUser?.role == 'rw') {
-                         roleLabel = 'LURAH';
+                       } else if (statusUpper.contains("LURAH")) {
+                         roleLabel = 'Lurah';
+                       } else {
+                         roleLabel = 'RT';
                        }
 
-                       String actionText = item.status == "PROSES" ? "INGATKAN $roleLabel" : "LIHAT DETAIL";
+                       String actionText = item.status.contains("PROSES") ? "INGATKAN $roleLabel" : "LIHAT DETAIL";
                        VoidCallback? actionCallback;
                        
-                       if (item.status == "PROSES") {
+                       if (item.status.contains("PROSES")) {
                          actionCallback = () {
                            if (currentUser != null) {
-                             _triggerReminder(context, currentUser, item);
+                             _triggerReminder(context, currentUser, item, roleLabel.toLowerCase());
                            } else {
                              TopNotification.show(
                                context: context,
@@ -279,7 +295,7 @@ class _AktivitasViewState extends State<AktivitasView> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isActive ? Colors.red.withValues(alpha: 0.9) : Colors.white,
+          color: isActive ? Colors.red.withOpacity(0.9) : Colors.white,
           gradient: isActive
               ? const LinearGradient(
                   colors: [Color(0xFF8B0000), Color.fromARGB(255, 83, 0, 0)],
@@ -521,16 +537,8 @@ class _AktivitasViewState extends State<AktivitasView> {
     );
   }
 
-  Future<void> _triggerReminder(BuildContext context, UserModel currentUser, AktivitasModel item) async {
-    String targetRole = 'rt';
-    String roleLabel = 'RT';
-    if (currentUser.role == 'rt') {
-      targetRole = 'rw';
-      roleLabel = 'RW';
-    } else if (currentUser.role == 'rw') {
-      targetRole = 'lurah';
-      roleLabel = 'Lurah';
-    }
+  Future<void> _triggerReminder(BuildContext context, UserModel currentUser, AktivitasModel item, String targetRole) async {
+    String roleLabel = targetRole.toUpperCase();
 
     TopNotification.show(
       context: context,
@@ -566,7 +574,7 @@ class _AktivitasViewState extends State<AktivitasView> {
       }
 
       final targetUserData = snapshot.docs.first.data();
-      final String? phone = targetUserData['nomorTelepon'] as String?;
+      final String? phone = targetUserData['nomor_telepon'] as String?;
       if (phone == null || phone.trim().isEmpty) {
         if (!context.mounted) return;
         TopNotification.show(

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -278,7 +277,7 @@ class _IuranViewState extends State<IuranView> {
                                     'assets/icons/ic_document_after.png',
                                     width: 140,
                                     height: 140,
-                                    color: Colors.black.withValues(alpha: 0.1),
+                                    color: Colors.black.withOpacity(0.1),
                                   ),
                                 ),
                               ),
@@ -455,7 +454,7 @@ class _IuranViewState extends State<IuranView> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
       ),
       child: const Column(
         children: [
@@ -490,7 +489,7 @@ class _IuranViewState extends State<IuranView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -514,10 +513,10 @@ class _IuranViewState extends State<IuranView> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isLunas
-                      ? Colors.green.withValues(alpha: 0.1)
+                      ? Colors.green.withOpacity(0.1)
                       : (isPending
-                            ? Colors.orange.withValues(alpha: 0.1)
-                            : Colors.red.withValues(alpha: 0.1)),
+                            ? Colors.orange.withOpacity(0.1)
+                            : Colors.red.withOpacity(0.1)),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -622,7 +621,7 @@ class _IuranViewState extends State<IuranView> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -634,7 +633,7 @@ class _IuranViewState extends State<IuranView> {
                 decoration: BoxDecoration(
                   color: isLunas
                       ? const Color(0xFFF0FDF4)
-                      : Colors.orange.withValues(alpha: 0.1),
+                      : Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(

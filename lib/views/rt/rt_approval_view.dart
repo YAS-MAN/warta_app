@@ -10,6 +10,7 @@ import '../../models/iuran_model.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../aktivitas/aktivitas_detail_view.dart';
 import '../../utils/top_notification.dart';
+import 'package:intl/intl.dart';
 
 class RtApprovalView extends StatelessWidget {
   final int initialIndex;
@@ -26,7 +27,7 @@ class RtApprovalView extends StatelessWidget {
           automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 8,
-          shadowColor: Colors.black.withValues(alpha: 0.5),
+          shadowColor: Colors.black.withOpacity(0.5),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
           ),
@@ -59,7 +60,7 @@ class RtApprovalView extends StatelessWidget {
                           58,
                           1,
                           1,
-                        ).withValues(alpha: 0.15),
+                        ).withOpacity(0.15),
                       ),
                     ),
                   ),
@@ -85,16 +86,16 @@ class RtApprovalView extends StatelessWidget {
             indicatorWeight: 3,
             tabs: [
               Tab(text: "Iuran"),
-              Tab(text: "Surat"),
               Tab(text: "Laporan"),
+              Tab(text: "Surat"),
             ],
           ),
         ),
         body: const TabBarView(
           children: [
             _TabIuranWargaApproval(),
-            _TabSuratPengantar(),
             _TabLaporanWarga(),
+            _TabSuratPengantar(),
           ],
         ),
       ),
@@ -190,10 +191,10 @@ class _TabIuranWargaApprovalState extends State<_TabIuranWargaApproval> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+                  border: Border.all(color: Colors.grey.withOpacity(0.1)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
+                      color: Colors.black.withOpacity(0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -780,11 +781,11 @@ class _TabSuratPengantarState extends State<_TabSuratPengantar> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.grey.withValues(alpha: 0.1),
+                          color: Colors.grey.withOpacity(0.1),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
+                            color: Colors.black.withOpacity(0.02),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -967,15 +968,6 @@ class _TabSuratPengantarState extends State<_TabSuratPengantar> {
       },
     );
   }
-
-  String _formatTime(DateTime? value) {
-    if (value == null) return 'Baru';
-    final diff = DateTime.now().difference(value);
-    if (diff.inMinutes < 1) return 'Baru saja';
-    if (diff.inHours < 1) return '${diff.inMinutes} mnt lalu';
-    if (diff.inDays < 1) return '${diff.inHours} jam lalu';
-    return '${diff.inDays} hari lalu';
-  }
 }
 
 class _TabLaporanWarga extends StatefulWidget {
@@ -1047,11 +1039,11 @@ class _TabLaporanWargaState extends State<_TabLaporanWarga> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.grey.withValues(alpha: 0.1),
+                          color: Colors.grey.withOpacity(0.1),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
+                            color: Colors.black.withOpacity(0.02),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -1259,3 +1251,8 @@ class _TabLaporanWargaState extends State<_TabLaporanWarga> {
     return '${diff.inDays} hari lalu';
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 4: RIWAYAT / SELESAI
+// ═══════════════════════════════════════════════════════════════════
+

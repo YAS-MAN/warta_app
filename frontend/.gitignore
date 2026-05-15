@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Mengabaikan folder environment Python
+venv/
+backend/venv/

@@ -79,7 +79,6 @@ Kami tidak hanya fokus pada fungsi, tapi juga pada pengalaman pengguna yang meny
 ## 📁 Struktur Direktori Proyek
 ```text
 WARTA_APP/
-├── apk/            # Hasil kompilasi aplikasi (.apk)
 ├── docs/           # Dokumentasi (PDF, SRS, Diagram Alur)
 ├── frontend/       # Kode Sumber Utama (Flutter)
 │   ├── lib/
@@ -108,7 +107,7 @@ Silakan gunakan akun berikut untuk mencoba seluruh level otorisasi:
 ---
 
 ## ⚙️ Panduan Pengembang
-1. **Clone Repo:** `git clone https://github.com/username/warta_app.git`
+1. **Clone Repo:** `git clone https://github.com/YAS-MAN/warta_app.git`
 2. **Pathing:** Masuk ke folder `cd frontend`
 3. **Instalasi:** `flutter pub get`
 4. **Build APK:** `flutter build apk --release --no-tree-shake-icons`
@@ -117,7 +116,7 @@ Silakan gunakan akun berikut untuk mencoba seluruh level otorisasi:
 
 ## 👨‍💻 Author
 **Yasman Yazid**  
-*NIM: [Masukkan NIM Anda]*  
+*NIM: 24091397077*  
 *Mahasiswa Informatika - Semester 4*  
 
 ---
